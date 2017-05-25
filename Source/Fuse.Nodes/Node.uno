@@ -6,7 +6,7 @@ using Fuse.Scripting;
 
 namespace Fuse
 {
-	/** Nodes are the basic building blocks of Fuse apps. 
+	/** Nodes are the basic building blocks of Fuse apps.
 
 		@topic Nodes
 
@@ -21,6 +21,22 @@ namespace Fuse
 	*/
 	public abstract partial class Node: PropertyObject, IList<Binding>, Scripting.IScriptObject, IProperties, INotifyUnrooted
 	{
+		int _lineNumber;
+		[UXLineNumber]
+		public int LineNumber
+		{
+			get { return _lineNumber; }
+			set { _lineNumber = value; }
+		}
+
+		string _fileName;
+		[UXSourceFileName]
+		public string FileName
+		{
+			get { return _fileName; }
+			set { _fileName = value; }
+		}
+
 		Scripting.Context _scriptContext;
 		object _scriptObject;
 
@@ -68,11 +84,11 @@ namespace Fuse
 					c++;
 					n = n.Parent;
 				}
-				
+
 				return c;
 			}
 		}
-		
+
 		/**
 			The context parent is the semantic parent of this node. It is where non-UI structure should
 			be resolved, like looking for the DataContext, a Navigation, or other semantic item.
@@ -81,7 +97,7 @@ namespace Fuse
 		{
 			get { return OverrideContextParent ?? Parent; }
 		}
-		
+
 		/**
 			Allows an alternate contextParent. This will be reset on each unrooting, preventing unrooted
 			use, and breaking any loops.
@@ -123,8 +139,8 @@ namespace Fuse
 			for (int i = 0; i < indent; i++) sb.Append("  ");
 			sb.AppendLine(this.ToString());
 		}
-		
-		/** 
+
+		/**
 			Allows a way for things that insert nodes (like `Each`) to determine the end of the
 			group of nodes further inserted by that node (such as a combination with `Match` or `Deferred`)
 		*/
