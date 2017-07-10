@@ -7,7 +7,7 @@ using Fuse.Scripting;
 
 namespace Fuse.Reactive
 {
-	partial class ThreadWorker: IDisposable, IDispatcher, IThreadWorker
+	public partial class ThreadWorker: IDisposable, IDispatcher, IThreadWorker
 	{
 		IDispatcher IThreadWorker.Dispatcher { get { return this; } }
 		Function IThreadWorker.Observable { get { return FuseJS.Observable; } }

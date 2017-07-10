@@ -4,7 +4,7 @@ using Fuse.Scripting;
 
 namespace Fuse.Reactive.FuseJS
 {
-	internal class Builtins
+	public class Builtins
 	{
 		static FuseJS.TimerModule _timer;
 

@@ -87,9 +87,17 @@ namespace Fuse.Reactive
 		}
 	}
 
+
+	/** 
+		Negates the boolean value
+
+		@ux-function foo(bar,baz)
+	*/
 	public sealed class Negate: UnaryOperator
 	{
 		public Negate([UXParameter("Operand")] Expression operand): base(operand) {}
+
+
 		protected override object Compute(object operand)
 		{
 			return Marshal.Multiply(operand, -1);

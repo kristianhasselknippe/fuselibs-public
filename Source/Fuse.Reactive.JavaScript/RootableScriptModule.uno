@@ -7,7 +7,7 @@ using Uno.Threading;
 
 namespace Fuse.Reactive
 {
-	class RootableScriptModule: ScriptModule
+	public class RootableScriptModule: ScriptModule
 	{
 		readonly ThreadWorker _worker;
 		readonly NameTable _names;
