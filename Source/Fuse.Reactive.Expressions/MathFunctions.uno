@@ -34,7 +34,7 @@ namespace Fuse.Reactive
 			return "max(" + Left + ", " + Right + ")";
 		}
 	}
-	
+
 	[UXFunction("mod")]
 	public sealed class Mod : BinaryOperator
 	{
@@ -62,7 +62,7 @@ namespace Fuse.Reactive
 			float v = 0;
 			if (!Marshal.TryToType<float>(operand, out v))
 				return null;
-				
+
 			var q = (int)Math.Round(v);
 			return q % 2 == 0;
 		}
@@ -72,7 +72,7 @@ namespace Fuse.Reactive
 			return "even(" + Operand +  ")";
 		}
 	}
-	
+
 	[UXFunction("odd")]
 	/** True if the rounded value is odd, false otherwise*/
 	public sealed class Odd : UnaryOperator
@@ -84,7 +84,7 @@ namespace Fuse.Reactive
 			float v = 0;
 			if (!Marshal.TryToType<float>(operand, out v))
 				return null;
-				
+
 			var q = (int)Math.Round(v);
 			return q % 2 != 0;
 		}
@@ -98,15 +98,17 @@ namespace Fuse.Reactive
 	[UXFunction("alternate")]
 	/**
 		Alternate between true/false values for ranges of integers.
-		
+
+		@ux-function alternate(foobar)
+
 			alternate( value, groupSize )
-			
+
 		Input values are rounded to the nearest integer.
-		
+
 		Example:
-		
+
 			alternate( value, 3 )
-			
+
 		This will yield true for values 0,1,2, false for 3,4,5, true for 6,7,8, false for 9,10,11, etc.
 	*/
 	public sealed class Alternate : BinaryOperator
@@ -122,8 +124,8 @@ namespace Fuse.Reactive
 				return null;
 			var value = (int)Math.Round(fvalue);
 			var group = (int)Math.Round(fgroup);
-			var b = value >= 0 ? 
-				(value % (group*2)) < group: 
+			var b = value >= 0 ?
+				(value % (group*2)) < group:
 				( -(value+1) % (group*2)) >= group;
 			return b;
 		}
@@ -134,11 +136,11 @@ namespace Fuse.Reactive
 		}
 	}
 
-	/** 
-		Common base for floating point operations 
-	
+	/**
+		Common base for floating point operations
+
 		All the derived expressions support 1-4 component input values and will return a value of the same size.
-		
+
 		[subclass Fuse.Reactive.UnaryFloatOperator]
 	*/
 	public abstract class UnaryFloatOperator : UnaryOperator
@@ -146,8 +148,8 @@ namespace Fuse.Reactive
 		internal delegate double FloatOp(double value);
 		string _name;
 		FloatOp _op;
-		internal UnaryFloatOperator(Expression operand, string name, FloatOp op) : 
-			base(operand) 
+		internal UnaryFloatOperator(Expression operand, string name, FloatOp op) :
+			base(operand)
 		{
 			_name = name;
 			_op = op;
@@ -157,7 +159,7 @@ namespace Fuse.Reactive
 			float4 v;
 			int size;
 			if (Marshal.TryToZeroFloat4(operand, out v, out size))
-			{	
+			{
 				switch (size)
 				{
 					case 1:
@@ -170,7 +172,7 @@ namespace Fuse.Reactive
 						return float4((float)_op(v[0]),(float)_op(v[1]),(float)_op(v[2]),(float)_op(v[3]));
 				}
 			}
-				
+
 			return null;
 		}
 		public override string ToString()
@@ -187,8 +189,8 @@ namespace Fuse.Reactive
 		internal delegate double FloatOp(double a, double b);
 		string _name;
 		FloatOp _op;
-		internal BinaryFloatOperator(Expression left, Expression right, string name, FloatOp op) : 
-			base(left, right) 
+		internal BinaryFloatOperator(Expression left, Expression right, string name, FloatOp op) :
+			base(left, right)
 		{
 			_name = name;
 			_op = op;
@@ -207,7 +209,7 @@ namespace Fuse.Reactive
 			return _name + "(" + Left + "," + Right +  ")";
 		}
 	}
-	
+
 	[UXFunction("sin")]
 	/** The trigonometric sine of the input angle (in radians) */
 	public sealed class Sin : UnaryFloatOperator
@@ -216,7 +218,7 @@ namespace Fuse.Reactive
 		public Sin([UXParameter("Operand")] Expression operand)
 			: base(operand,"sin", Math.Sin) {}
 	}
-	
+
 	[UXFunction("cos")]
 	/** The trigonometric cosine of the input angle (in radians) */
 	public sealed class Cos : UnaryFloatOperator
@@ -225,7 +227,7 @@ namespace Fuse.Reactive
 		public Cos([UXParameter("Operand")] Expression operand)
 			: base(operand, "cos", Math.Cos) {}
 	}
-	
+
 	[UXFunction("tan")]
 	/** The trigonometric tangent of the input angle (in radians) */
 	public sealed class Tan : UnaryFloatOperator
@@ -234,7 +236,7 @@ namespace Fuse.Reactive
 		public Tan([UXParameter("Operand")] Expression operand)
 			: base(operand, "tan", Math.Tan) {}
 	}
-	
+
 	/** The invserse trigonometric sine of the input */
 	[UXFunction("asin")]
 	public sealed class Asin : UnaryFloatOperator
@@ -243,7 +245,7 @@ namespace Fuse.Reactive
 		public Asin([UXParameter("Operand")] Expression operand)
 			: base(operand,"asin", Math.Asin) {}
 	}
-	
+
 	[UXFunction("acos")]
 	/** The invserse trigonometric cosine of the input */
 	public sealed class Acos : UnaryFloatOperator
@@ -252,7 +254,7 @@ namespace Fuse.Reactive
 		public Acos([UXParameter("Operand")] Expression operand)
 			: base(operand, "acos", Math.Acos) {}
 	}
-	
+
 	[UXFunction("atan")]
 	/** The invserse trigonometric tangent of the input */
 	public sealed class Atan : UnaryFloatOperator
@@ -261,11 +263,11 @@ namespace Fuse.Reactive
 		public Atan([UXParameter("Operand")] Expression operand)
 			: base(operand, "atan", Math.Atan) {}
 	}
-	
+
 	[UXFunction("atan2")]
-	/** 
-		The invserse trigonometric tangent of the input components 
-		
+	/**
+		The invserse trigonometric tangent of the input components
+
 			atan2(y, x)
 	*/
 	public sealed class Atan2 : BinaryFloatOperator
@@ -290,7 +292,7 @@ namespace Fuse.Reactive
 		public Sqrt([UXParameter("Operand")] Expression operand)
 			: base(operand, "sqrt", Math.Sqrt) {}
 	}
-	
+
 	[UXFunction("ceil")]
 	public sealed class Ceil : UnaryFloatOperator
 	{
@@ -298,7 +300,7 @@ namespace Fuse.Reactive
 		public Ceil([UXParameter("Operand")] Expression operand)
 			: base(operand, "ceil", Math.Ceil) {}
 	}
-	
+
 	[UXFunction("floor")]
 	public sealed class Floor : UnaryFloatOperator
 	{
@@ -306,7 +308,7 @@ namespace Fuse.Reactive
 		public Floor([UXParameter("Operand")] Expression operand)
 			: base(operand, "floor", Math.Floor) {}
 	}
-	
+
 	[UXFunction("degreesToRadians")]
 	public sealed class DegreesToRadians : UnaryFloatOperator
 	{
@@ -346,7 +348,7 @@ namespace Fuse.Reactive
 		public Fract([UXParameter("Operand")] Expression operand)
 			: base(operand, "fract", Math.Fract) {}
 	}
-	
+
 	[UXFunction("log")]
 	public sealed class Log : UnaryFloatOperator
 	{
@@ -362,7 +364,7 @@ namespace Fuse.Reactive
 		public Log2([UXParameter("Operand")] Expression operand)
 			: base(operand, "log2", Math.Log2) {}
 	}
-	
+
 	[UXFunction("sign")]
 	public sealed class Sign : UnaryFloatOperator
 	{
@@ -386,7 +388,7 @@ namespace Fuse.Reactive
 		public Round([UXParameter("Operand")] Expression operand)
 			: base(operand, "operand", Math.Round) {}
 	}
-	
+
 	[UXFunction("trunc")]
 	/** Rounds to the next whole integer closer to zero */
 	public sealed class Trunc : UnaryFloatOperator
@@ -394,43 +396,43 @@ namespace Fuse.Reactive
 		[UXConstructor]
 		public Trunc([UXParameter("Operand")] Expression operand)
 			: base(operand, "trunc", Op) {}
-			
+
 		internal static double Op(double v)
 		{
 			return v < 0 ? Math.Ceil(v) : Math.Floor(v);
 		}
 	}
-	
+
 	/**
 		Calculates the linear interpolation between two values.
-		
+
 			lerp( from, to, step )
-			
+
 		When step==0 the result is `from`, when step==1 the result is `to`. Partial values are linearly interpolated. Step values <0 and >1 are also supported.
-		
-		The input supports a 1-4 component value for `from` and `to`. The result will be same size. 
+
+		The input supports a 1-4 component value for `from` and `to`. The result will be same size.
 		`step` must always be a single value.
 	*/
 	[UXFunction("lerp")]
 	public sealed class Lerp : TernaryOperator
 	{
 		[UXConstructor]
-		public Lerp([UXParameter("First")] Expression first, 
-			[UXParameter("Second")] Expression second, 
-			[UXParameter("Third")] Expression third) : 
-			base(first, second, third) 
+		public Lerp([UXParameter("First")] Expression first,
+			[UXParameter("Second")] Expression second,
+			[UXParameter("Third")] Expression third) :
+			base(first, second, third)
 		{ }
 		protected override object Compute(object a, object b, object t)
 		{
 			float4 av = float4(0), bv = float4(0);
 			int asize = 0, bsize = 0;
 			float tv = 0;
-			if (!Marshal.TryToZeroFloat4(a, out av, out asize) ||	
+			if (!Marshal.TryToZeroFloat4(a, out av, out asize) ||
 				!Marshal.TryToZeroFloat4(b, out bv, out bsize) ||
 				!Marshal.TryToType<float>(t, out tv))
 				return null;
 			int size = Math.Max(asize, bsize);
-			
+
 			switch (size)
 			{
 				case 1:
@@ -442,7 +444,7 @@ namespace Fuse.Reactive
 				case 4:
 					return Math.Lerp(av, bv, tv);
 			}
-				
+
 			return null;
 		}
 		public override string ToString()
@@ -450,27 +452,27 @@ namespace Fuse.Reactive
 			return "lerp(" + First + "," + Second +  "," + Third + ")";
 		}
 	}
-	
+
 	/**
 		Restricts the range of a value to between two numbers.
-		
+
 			clamp( value, min, max)
-			
+
 		Returns
 		- `min` when `value < min`
 		- `max` when `value > max`
 		- `value` otherwise
-			
+
 		Value may be a 1-4 component value. `min` and `max` must both be a single value.
 	*/
 	[UXFunction("clamp")]
 	public sealed class Clamp : TernaryOperator
 	{
 		[UXConstructor]
-		public Clamp([UXParameter("First")] Expression first, 
-			[UXParameter("Second")] Expression second, 
-			[UXParameter("Third")] Expression third) : 
-			base(first, second, third) 
+		public Clamp([UXParameter("First")] Expression first,
+			[UXParameter("Second")] Expression second,
+			[UXParameter("Third")] Expression third) :
+			base(first, second, third)
 		{ }
 		protected override object Compute(object a, object mn, object mx)
 		{
@@ -481,7 +483,7 @@ namespace Fuse.Reactive
 				!Marshal.TryToType<float>(mn, out mnv) ||
 				!Marshal.TryToType<float>(mx, out mxv))
 				return null;
-			
+
 			if (size == 1)
 				return Math.Clamp(av.X, mnv, mxv);
 			if (size == 2)
@@ -490,7 +492,7 @@ namespace Fuse.Reactive
 				return Math.Clamp(av.XYZ, mnv, mxv);
 			if (size == 4)
 				return Math.Clamp(av, mnv, mxv);
-				
+
 			return null;
 		}
 		public override string ToString()
