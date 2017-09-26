@@ -85,13 +85,13 @@ namespace Fuse.Controls.Native.Android
 
 				_imageSource = value;
 
-				else if (value is FileImageSource)
+				if (value is FileImageSource)
 					UpdateImage((FileImageSource)value);
 				else if (value is HttpImageSource)
 					UpdateImage((HttpImageSource)value);
 				else if (value is MultiDensityImageSource)
 				{
-					((MultiDensityImageSource)ImageSource).ActiveChanged += OnImageSourceChanged;
+					((MultiDensityImageSource)ImageSource).ActiveChanged += OnMultiDensityImageSourceActiveChanged;
 					UpdateImage((MultiDensityImageSource)value);
 				}
 				else
@@ -135,7 +135,7 @@ namespace Fuse.Controls.Native.Android
 			ImageHandle = null;
 			if (ImageSource != null && ImageSource is MultiDensityImageSource)
 			{
-				((MultiDensityImageSource)ImageSource).SourcesChanged -= OnImageSourceChanged;
+				((MultiDensityImageSource)ImageSource).ActiveChanged -= OnMultiDensityImageSourceActiveChanged;
 			}
 			base.Dispose();
 		}

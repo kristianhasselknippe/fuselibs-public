@@ -123,7 +123,7 @@ namespace Fuse.Resources
 			if (use != null)
 				_proxy.Attach( use );
 			
-			ActiveChanged();
+			OnActiveChanged();
 		}
 
 		internal MemoryPolicy Policy

@@ -27,13 +27,13 @@ namespace Fuse.Controls.Native.iOS
 
 				_imageSource = value;
 
-				else if (value is FileImageSource)
+				if (value is FileImageSource)
 					UpdateImage((FileImageSource)value);
 				else if (value is HttpImageSource)
 					UpdateImage((HttpImageSource)value);
 				else if (value is MultiDensityImageSource)
 				{
-					((MultiDensityImageSource)ImageSource).ActiveChanged += OnImageSourceChanged;
+					((MultiDensityImageSource)ImageSource).ActiveChanged += OnMultiDensityImageSourceActiveChanged;
 					UpdateImage((MultiDensityImageSource)value);
 				}
 				else
@@ -90,8 +90,12 @@ namespace Fuse.Controls.Native.iOS
 
 		public override void Dispose()
 		{
-			base.Dispose();
 			ImageHandle = null;
+			if (ImageSource != null && ImageSource is MultiDensityImageSource)
+			{
+				((MultiDensityImageSource)ImageSource).ActiveChanged -= OnMultiDensityImageSourceActiveChanged;
+			}
+			base.Dispose();
 		}
 
 		ObjC.Object _uiImageHandle;
