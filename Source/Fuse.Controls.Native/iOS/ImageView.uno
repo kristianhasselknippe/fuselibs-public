@@ -34,15 +34,14 @@ namespace Fuse.Controls.Native.iOS
 		{
 			if (ImageSource == null)
 				return;
+			if (ImageSource is MultiDensityImageSource)
+				((MultiDensityImageSource)ImageSource).SourcesChanged -= OnImageSourceChanged;
 			else if (ImageSource is FileImageSource)
 				UpdateImage((FileImageSource)ImageSource);
 			else if (ImageSource is HttpImageSource)
 				UpdateImage((HttpImageSource)ImageSource);
 			else if (ImageSource is MultiDensityImageSource)
 			{
-				if (ImageSource != null && ImageSource is MultiDensityImageSource)
-					((MultiDensityImageSource)ImageSource).SourcesChanged -= OnImageSourceChanged;
-
 				var mds = (MultiDensityImageSource)ImageSource;
 				mds.SourcesChanged += OnImageSourceChanged;
 

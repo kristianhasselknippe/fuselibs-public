@@ -90,8 +90,16 @@ namespace Fuse.Controls.Native.Android
 
 		void OnImageSourceChanged()
 		{
-			SourceChanged;
-
+			if (ImageSource == null)
+				return;
+			if (ImageSource is MultiDensityImageSource)
+				((MultiDensityImageSource)ImageSource).SourcesChanged -= OnImageSourceChanged;
+			else if (ImageSource is FileImageSource)
+				UpdateImage((FileImageSource)ImageSource);
+			else if (ImageSource is HttpImageSource)
+				UpdateImage((HttpImageSource)ImageSource);
+			else if (ImageSource is MultiDensityImageSource)
+			{
 				var mds = (MultiDensityImageSource)ImageSource;
 				mds.SourcesChanged += OnImageSourceChanged;
 
