@@ -77,10 +77,27 @@ namespace Fuse.Controls.Native.Android
 		{
 			set
 			{
+				if (ImageSource is MultiDensityImageSource)
+					((MultiDensityImageSource)ImageSource).ActiveChanged -= OnMultiDensityImageSourceActiveChanged;
+
 				if (value == null)
 					ImageHandle = null;
+
 				_imageSource = value;
-				OnImageSourceChanged();
+
+				else if (value is FileImageSource)
+					UpdateImage((FileImageSource)value);
+				else if (value is HttpImageSource)
+					UpdateImage((HttpImageSource)value);
+				else if (value is MultiDensityImageSource)
+				{
+					((MultiDensityImageSource)ImageSource).ActiveChanged += OnImageSourceChanged;
+					UpdateImage((MultiDensityImageSource)value);
+				}
+				else
+				{
+					throw new Exception(value + " not supported in native context");
+				}
 			}
 			private get
 			{
@@ -88,26 +105,11 @@ namespace Fuse.Controls.Native.Android
 			}
 		}
 
-		void OnImageSourceChanged()
+		void OnMultiDensityImageSourceActiveChanged()
 		{
-			if (ImageSource == null)
-				return;
 			if (ImageSource is MultiDensityImageSource)
-				((MultiDensityImageSource)ImageSource).SourcesChanged -= OnImageSourceChanged;
-			else if (ImageSource is FileImageSource)
-				UpdateImage((FileImageSource)ImageSource);
-			else if (ImageSource is HttpImageSource)
-				UpdateImage((HttpImageSource)ImageSource);
-			else if (ImageSource is MultiDensityImageSource)
 			{
-				var mds = (MultiDensityImageSource)ImageSource;
-				mds.SourcesChanged += OnImageSourceChanged;
-
-				UpdateImage(mds);
-			}
-			else
-			{
-				throw new Exception(ImageSource + " not supported in native context");
+				UpdateImage((MultiDensityImageSource)ImageSource);
 			}
 		}
 

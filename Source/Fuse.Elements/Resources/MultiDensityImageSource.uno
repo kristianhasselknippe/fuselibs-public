@@ -45,11 +45,11 @@ namespace Fuse.Resources
 			_proxy = new ProxyImageSource(this);
 		}
 
-		internal event Action SourcesChanged;
+		internal event Action ActiveChanged;
 
-		void OnSourcesChanged()
+		void OnActiveChanged()
 		{
-			var handler = SourcesChanged;
+			var handler = ActiveChanged;
 			if (handler != null)
 			{
 				handler();
@@ -110,7 +110,6 @@ namespace Fuse.Resources
 			}
 
 			SwapActive(use);
-			OnSourcesChanged();
 		}
 
 		void SwapActive(ImageSource use)
@@ -123,6 +122,8 @@ namespace Fuse.Resources
 			_active = use;
 			if (use != null)
 				_proxy.Attach( use );
+			
+			ActiveChanged();
 		}
 
 		internal MemoryPolicy Policy
