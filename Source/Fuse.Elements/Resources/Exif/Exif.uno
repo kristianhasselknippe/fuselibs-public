@@ -38,6 +38,18 @@ namespace Fuse.Resources.Exif
 			return true;
 		}
 
+		public static ExifData FromStream(Stream stream)
+		{
+			if defined(Android)
+				return ExifAndroidImpl.FromStream(stream);
+			/*if defined(iOS)
+				return ExifIOSImpl.FromStream(stream);*/
+			if defined(DotNet)
+				return ExifDotNetImpl.FromStream(stream);
+			else
+				return default(ExifData);
+		}
+
 		public static ImageOrientation GetImageOrientationFromByteArrayOrDefault(byte[] buffer)
 		{
 			ExifData data;
@@ -100,6 +112,12 @@ namespace Fuse.Resources.Exif
 		internal static ExifData FromByteArray(byte[] bytes)
 		{
 			var img = Image.FromStream(new MemoryStream(bytes));
+			return new ExifData(GetOrientation(img));
+		}
+
+		internal static ExifData FromStream(Stream stream)
+		{
+			var img = Image.FromStream(stream);
 			return new ExifData(GetOrientation(img));
 		}
 
@@ -186,6 +204,47 @@ namespace Fuse.Resources.Exif
 			var orientation = GetOrientation(buf);
 			return new ExifData(orientation);
 		}
+
+		Stream _stream;
+		public ExifAndroidImpl(Stream stream)
+		{
+			_stream = stream;
+		}
+		
+		internal static ExifData FromStream(Stream stream)
+		{
+			var impl = new ExifAndroidImpl(stream);
+			return new ExifData(impl.GetOrientationFromStream(impl.ReadByte));
+		}
+
+		int ReadByte()
+		{
+			var ret = new byte[1];
+			_stream.Read(ret, 0, 1);
+			return ret[0];
+		}
+
+		[Foreign(Language.Java)]
+		int GetOrientationFromStream(Func<int> readByte)
+		@{
+			InputStream s = new InputStream() {
+				public int read() {
+					return readByte.run();
+				}
+			};
+			try {
+				Metadata metadata = ImageMetadataReader.readMetadata(s);
+				ExifIFD0Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+
+				if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+					return directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			return -1;
+		@}
 
 		[Foreign(Language.Java)]
 		static int GetOrientation(Java.Object buf)
