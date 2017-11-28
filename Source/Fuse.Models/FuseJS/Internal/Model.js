@@ -3,6 +3,8 @@ var TreeObservable = require("FuseJS/TreeObservable")
 require("Polyfills/Window");
 require("./ZonePatches");
 
+var fs = require("FuseJS/FileSystem");
+
 var rootZone = Zone.current;
 
 function shouldEmitProperty(key) {
@@ -14,15 +16,19 @@ function isThenable(thing) {
 		&& typeof thing.then === "function";
 }
 
+var transactionsFilePath = fs.dataDirectory + "/" + "transactions";
+console.log("Transactions path: " + transactionsFilePath)
 var transactions = [];
 function emitTransaction(descriptor) {
 	transactions.push(descriptor);
 	console.log(JSON.stringify(descriptor));
+	fs.appendTextToFile(transactionsFilePath, JSON.stringify(descriptor) + "\n");
 }
 
 function emitChangeEvent(descriptor) {
 	transactions.push(descriptor);
 	console.log(JSON.stringify(descriptor));
+	fs.appendTextToFile(transactionsFilePath, JSON.stringify(descriptor) + "\n");	
 }
 
 function Model(initialState, stateInitializer)
@@ -34,6 +40,11 @@ function Model(initialState, stateInitializer)
 	var store = this;
 
 	instrument(null, this, initialState, stateInitializer)
+
+	emitTransaction({
+		name: "Initial state",
+		state: initialState
+	});
 
 	function instrument(parentMeta, node, state, stateInitializer)
 	{
