@@ -14,6 +14,17 @@ function isThenable(thing) {
 		&& typeof thing.then === "function";
 }
 
+var transactions = [];
+function emitTransaction(descriptor) {
+	transactions.push(descriptor);
+	console.log(JSON.stringify(descriptor));
+}
+
+function emitChangeEvent(descriptor) {
+	transactions.push(descriptor);
+	console.log(JSON.stringify(descriptor));
+}
+
 function Model(initialState, stateInitializer)
 {
 	var stateToMeta = new Map();
@@ -64,6 +75,9 @@ function Model(initialState, stateInitializer)
 			nodeZone = rootZone.fork({
 				name: (parentMeta != null ? parentMeta.key : '(root)'),
 				onInvokeTask: function(parentZoneDelegate, currentZone, targetZone, task, applyThis, applyArgs) {
+					emitTransaction({
+						name: parentMeta.key
+					})
 					dirty();
 					parentZoneDelegate.invokeTask(targetZone, task, applyThis, applyArgs);
 				},
@@ -196,6 +210,9 @@ function Model(initialState, stateInitializer)
 			var f = function() {
 				var args = arguments;
 				return runInZone(function() {
+					emitTransaction({
+						name: func.name
+					});
 					dirty();
 					return func.apply(state, args);
 				});
@@ -314,6 +331,9 @@ function Model(initialState, stateInitializer)
 			node.__fuse_replaceAll = function(values) {
 				replaceAllInternal(state, values);
 				replaceAllInternal(node, values);
+				emitTransaction({
+					name: "(two-way-binding)"
+				});
 				dirty();
 			}
 		}
@@ -333,6 +353,10 @@ function Model(initialState, stateInitializer)
 				state[key] = value;
 				setInternal(meta.getPath(), key, value);
 			}
+
+			emitTransaction({
+				name: "(two-way-binding): " + key + " = " + value
+			});
 
 			meta.diff(new Set());
 		}
@@ -415,6 +439,11 @@ function Model(initialState, stateInitializer)
 
 			var argPath = path.concat(key, value instanceof Array ? [value] : value);
 			TreeObservable.set.apply(store, argPath);
+			emitChangeEvent({
+				type: "set",
+				path: path.concat(key),
+				value: value
+			});
 		}
 
 		function removeRange(index, count) {
@@ -426,6 +455,12 @@ function Model(initialState, stateInitializer)
 			for (var i = 0; i < count; i++) {
 				TreeObservable.removeAt.apply(store, removePath);
 			}
+			emitChangeEvent({
+				type: "removeRange",
+				path: getPath(),
+				index: index,
+				count: count
+			});
 			changesDetected++;
 		}
 
@@ -449,6 +484,14 @@ function Model(initialState, stateInitializer)
 			node[index] = item = wrap(index, item)
 			
 			TreeObservable.insertAt.apply(store, getPath().concat(index, item));
+
+			emitChangeEvent({
+				type: "insertAt",
+				path: getPath(),
+				index: index,
+				item: item
+			});
+
 			changesDetected++;
 		}
 
@@ -459,6 +502,12 @@ function Model(initialState, stateInitializer)
 				node[index] = item = wrap(index, item);
 				TreeObservable.add.apply(store, getPath().concat(item));
 			}
+
+			emitChangeEvent({
+				type: "addRange",
+				items: items,
+				path: getPath()
+			});
 			
 			changesDetected++;
 		}
