@@ -3,8 +3,6 @@ var TreeObservable = require("FuseJS/TreeObservable")
 require("Polyfills/Window");
 require("./ZonePatches");
 
-var fs = require("FuseJS/FileSystem");
-
 var rootZone = Zone.current;
 
 function shouldEmitProperty(key) {
@@ -16,19 +14,13 @@ function isThenable(thing) {
 		&& typeof thing.then === "function";
 }
 
-var transactionsFilePath = fs.dataDirectory + "/" + "transactions";
-console.log("Transactions path: " + transactionsFilePath)
-var transactions = [];
+var changeEventHandler = null;
 function emitTransaction(descriptor) {
-	transactions.push(descriptor);
-	console.log(JSON.stringify(descriptor));
-	fs.appendTextToFile(transactionsFilePath, JSON.stringify(descriptor) + "\n");
+	changeEventHandler(descriptor);
 }
 
 function emitChangeEvent(descriptor) {
-	transactions.push(descriptor);
-	console.log(JSON.stringify(descriptor));
-	fs.appendTextToFile(transactionsFilePath, JSON.stringify(descriptor) + "\n");	
+	changeEventHandler(descriptor);
 }
 
 function Model(initialState, stateInitializer)
@@ -41,10 +33,12 @@ function Model(initialState, stateInitializer)
 
 	instrument(null, this, initialState, stateInitializer)
 
-	emitTransaction({
-		name: "Initial state",
-		state: initialState
-	});
+	if (changeEventHandler !== null) {
+		emitTransaction({
+			name: "Initial state",
+			state: initialState
+		});
+	}
 
 	function instrument(parentMeta, node, state, stateInitializer)
 	{
@@ -86,9 +80,11 @@ function Model(initialState, stateInitializer)
 			nodeZone = rootZone.fork({
 				name: (parentMeta != null ? parentMeta.key : '(root)'),
 				onInvokeTask: function(parentZoneDelegate, currentZone, targetZone, task, applyThis, applyArgs) {
-					emitTransaction({
-						name: parentMeta.key
-					})
+					if (changeEventHandler !== null) {
+						emitTransaction({
+							name: parentMeta.key
+						});
+					}
 					dirty();
 					parentZoneDelegate.invokeTask(targetZone, task, applyThis, applyArgs);
 				},
@@ -103,6 +99,7 @@ function Model(initialState, stateInitializer)
 			if (!shouldEmitProperty(k)) continue;
 			var v = state[k];
 			if (v instanceof Function) {
+				console.log("In Instrument");
 				node[k] = wrapFunction(v);
 				state[k] = node[k];
 				meta.isClass = true;
@@ -147,6 +144,10 @@ function Model(initialState, stateInitializer)
 			for (var i in keys) {
 				var p = keys[i];
 				if (p === "constructor") { continue; }
+				if (p === "$on_event") { //used to handle change events by the client.
+					changeEventHandler = obj[p];
+					continue;
+				}
 				try {
 					var value = state[p];
 				}
@@ -155,6 +156,7 @@ function Model(initialState, stateInitializer)
 				}
 
 				if (value instanceof Function) {
+					console.log("Register props");
 					node[p] = wrapFunction(value);
 					state[p] = node[p];
 				}
@@ -218,12 +220,15 @@ function Model(initialState, stateInitializer)
 		}
 
 		function wrapFunction(func) {
+			console.log("Function name: " + func.name);
 			var f = function() {
 				var args = arguments;
 				return runInZone(function() {
-					emitTransaction({
-						name: func.name
-					});
+					if (changeEventHandler !== null) {
+						emitTransaction({
+							name: func.name
+						});
+					}
 					dirty();
 					return func.apply(state, args);
 				});
@@ -342,9 +347,11 @@ function Model(initialState, stateInitializer)
 			node.__fuse_replaceAll = function(values) {
 				replaceAllInternal(state, values);
 				replaceAllInternal(node, values);
-				emitTransaction({
-					name: "(two-way-binding)"
-				});
+				if (changeEventHandler !== null) {
+					emitTransaction({
+						name: "(two-way-binding)"
+					});
+				}
 				dirty();
 			}
 		}
@@ -365,9 +372,11 @@ function Model(initialState, stateInitializer)
 				setInternal(meta.getPath(), key, value);
 			}
 
-			emitTransaction({
-				name: "(two-way-binding): " + key + " = " + value
-			});
+			if (changeEventHandler !== null) {
+				emitTransaction({
+					name: "(two-way-binding): " + key + " = " + value
+				});
+			}
 
 			meta.diff(new Set());
 		}
@@ -376,6 +385,7 @@ function Model(initialState, stateInitializer)
 		{
 			if (value instanceof Function) {
 				if (!value.__fuse_isWrapped) {
+					console.log("Update");
 					state[key] = wrapFunction(value)
 					set(key, state[key]);
 				}
@@ -450,11 +460,13 @@ function Model(initialState, stateInitializer)
 
 			var argPath = path.concat(key, value instanceof Array ? [value] : value);
 			TreeObservable.set.apply(store, argPath);
-			emitChangeEvent({
-				type: "set",
-				path: path.concat(key),
-				value: value
-			});
+			if (changeEventHandler !== null) {
+				emitChangeEvent({
+					type: "set",
+					path: path.concat(key),
+					value: value
+				});
+			}
 		}
 
 		function removeRange(index, count) {
@@ -466,12 +478,14 @@ function Model(initialState, stateInitializer)
 			for (var i = 0; i < count; i++) {
 				TreeObservable.removeAt.apply(store, removePath);
 			}
-			emitChangeEvent({
-				type: "removeRange",
-				path: getPath(),
-				index: index,
-				count: count
-			});
+			if (changeEventHandler !== null) {
+				emitChangeEvent({
+					type: "removeRange",
+					path: getPath(),
+					index: index,
+					count: count
+				});
+			}
 			changesDetected++;
 		}
 
@@ -496,12 +510,14 @@ function Model(initialState, stateInitializer)
 			
 			TreeObservable.insertAt.apply(store, getPath().concat(index, item));
 
-			emitChangeEvent({
-				type: "insertAt",
-				path: getPath(),
-				index: index,
-				item: item
-			});
+			if (changeEventHandler !== null) {
+				emitChangeEvent({
+					type: "insertAt",
+					path: getPath(),
+					index: index,
+					item: item
+				});
+			}
 
 			changesDetected++;
 		}
@@ -514,11 +530,13 @@ function Model(initialState, stateInitializer)
 				TreeObservable.add.apply(store, getPath().concat(item));
 			}
 
-			emitChangeEvent({
-				type: "addRange",
-				items: items,
-				path: getPath()
-			});
+			if (changeEventHandler !== null) {
+				emitChangeEvent({
+					type: "addRange",
+					items: items,
+					path: getPath()
+				});
+			}
 			
 			changesDetected++;
 		}
