@@ -16,11 +16,11 @@ function isThenable(thing) {
 
 var changeEventHandler = null;
 function emitTransaction(descriptor) {
-	changeEventHandler(descriptor);
+	changeEventHandler({ type: "transaction", data: descriptor });
 }
 
 function emitChangeEvent(descriptor) {
-	changeEventHandler(descriptor);
+	changeEventHandler({ type: "model_change", data: descriptor });
 }
 
 function Model(initialState, stateInitializer)
@@ -82,7 +82,7 @@ function Model(initialState, stateInitializer)
 				onInvokeTask: function(parentZoneDelegate, currentZone, targetZone, task, applyThis, applyArgs) {
 					if (changeEventHandler !== null) {
 						emitTransaction({
-							name: parentMeta.key
+							name: "Parent meta: " + parentMeta.key
 						});
 					}
 					dirty();
