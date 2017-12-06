@@ -3,6 +3,7 @@ using Uno.UX;
 
 using Fuse.Input;
 using Fuse.Triggers;
+using FuseUIEvents;
 
 namespace Fuse.Gestures
 {
@@ -79,6 +80,10 @@ namespace Fuse.Gestures
 
 		void OnTapped(PointerEventArgs args, int tapCount)
 		{
+			var visual = args.Visual;
+			var localPoint = args.Visual.WindowToLocal(args.WindowPoint);
+			UIEvents.EmitUIEvent(new UIPointerEventArgs(visual.ToString(), localPoint, args.WindowPoint));
+			
 			if (!Accept(args))
 				return;
 			Pulse();

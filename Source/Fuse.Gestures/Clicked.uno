@@ -1,6 +1,7 @@
 using Uno;
 using Uno.UX;
 using Fuse.Input;
+using FuseUIEvents;
 
 namespace Fuse.Gestures
 {
@@ -68,6 +69,9 @@ namespace Fuse.Gestures
 
 		void OnClicked(PointerEventArgs args, int clickCount)
 		{
+			var visual = args.Visual;
+			var localPoint = args.Visual.WindowToLocal(args.WindowPoint);
+			UIEvents.EmitUIEvent(new UIPointerEventArgs(visual.ToString(), localPoint, args.WindowPoint));
 			if (!Accept(args))
 				return;
 

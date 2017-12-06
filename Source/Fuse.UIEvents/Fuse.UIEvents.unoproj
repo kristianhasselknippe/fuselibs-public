@@ -1,0 +1,21 @@
+{
+  "Copyright": "Copyright (c) Fusetools AS 2017",
+  "Version": "1.4.1",
+  "Publisher": "Fusetools AS",
+  "Description": "References FuseJS standard features",
+  "Package": {
+    "ProjectUrl": "https://fusetools.com"
+  },
+  "Packages": [
+    "Uno.Collections",
+    "Uno.Net.Http",
+    "Uno.Threading"
+  ],
+	"Projects": [
+		"../Fuse.Scripting/Fuse.Scripting.unoproj",
+		"../Fuse.Platform/Fuse.Platform.unoproj",
+  ],
+  "Includes": [
+    "UIEvents.uno:Source"
+  ]
+}

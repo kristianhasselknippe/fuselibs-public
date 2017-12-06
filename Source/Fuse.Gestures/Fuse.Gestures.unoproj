@@ -16,12 +16,14 @@
     "Fuse.Controls.Test",
     "Fuse.Gestures.Test",
     "Fuse.Navigation",
+	 "Fuse.UIEvents"
   ],
   "Packages": [
-    "Uno.Collections"
+    "Uno.Collections",
   ],
   "Projects": [
     "../Fuse.Animations/Fuse.Animations.unoproj",
+    "../Fuse.UIEvents/Fuse.UIEvents.unoproj",
     "../Fuse.Nodes/Fuse.Nodes.unoproj",
     "../Fuse.Common/Fuse.Common.unoproj",
     "../Fuse.Scripting/Fuse.Scripting.unoproj",

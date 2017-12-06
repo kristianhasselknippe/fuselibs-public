@@ -43,6 +43,7 @@
     "Fuse.Common.Test",
     "Fuse.Nodes.Test",
     "Fuse.Models",
+	 "FuseUIEvents"
   ],
   "Packages": [
     "Uno.Collections",
@@ -51,6 +52,7 @@
     "UnoCore"
   ],
   "Projects": [
+	 "../Fuse.UIEvents/Fuse.UIEvents.unoproj",
     "../Fuse.Common/Fuse.Common.unoproj",
     "../Fuse.Marshal/Fuse.Marshal.unoproj",
     "../Fuse.Scripting/Fuse.Scripting.unoproj",

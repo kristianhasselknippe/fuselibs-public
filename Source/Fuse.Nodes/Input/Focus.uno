@@ -1,6 +1,7 @@
 using Uno;
 using Uno.UX;
 using Uno.Compiler;
+using FuseUIEvents;
 
 
 namespace Fuse.Input
@@ -199,6 +200,8 @@ namespace Fuse.Input
 				var nf = _lastFocusedVisual as INotifyFocus;
 				if (nf != null) nf.OnFocusLost();
 
+				var visualString = _lastFocusedVisual == null ? "No visual" : _lastFocusedVisual.ToString();
+				UIEvents.EmitUIEvent(new UIFocusEventArgs(visualString, UIFocusEventType.Lost));
 				Lost.RaiseWithBubble(new FocusLostArgs(_lastFocusedVisual));
 			}
 
@@ -206,7 +209,9 @@ namespace Fuse.Input
 			{
 				var nf = _focusedObject as INotifyFocus;
 				if (nf != null) nf.OnFocusGained();
-				
+
+				var visualString = _focusedObject == null ? "No visual" : _focusedObject.ToString();
+				UIEvents.EmitUIEvent(new UIFocusEventArgs(visualString, UIFocusEventType.Gained));
 				Gained.RaiseWithBubble(new FocusGainedArgs(_focusedObject));
 			}
 		}
