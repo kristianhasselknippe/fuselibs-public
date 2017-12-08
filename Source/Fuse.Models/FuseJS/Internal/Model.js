@@ -374,7 +374,9 @@ function Model(initialState, stateInitializer)
 
 			if (changeEventHandler !== null) {
 				emitTransaction({
-					name: "(two-way-binding): " + key + " = " + value
+					name: "two-way-binding",
+					path: key,
+					value: value
 				});
 			}
 
