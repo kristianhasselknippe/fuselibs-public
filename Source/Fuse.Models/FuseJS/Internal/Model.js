@@ -71,6 +71,7 @@ function Model(initialState, stateInitializer)
 		//the default $path for Navigation. Ideally this wouldn't be part of the IObject keys, but it works for now.
 		if (state instanceof Object && !('$__fuse_classname' in state)) {
 			node.$__fuse_classname = state.constructor.name;
+			state.$__fuse_classname = state.constructor.name;
 		}
 
 		// create zone lazily to avoid overhead when not needed
