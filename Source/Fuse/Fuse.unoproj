@@ -13,6 +13,7 @@
     "../Fuse.Animations/Fuse.Animations.unoproj",
     "../Fuse.Controls/Fuse.Controls.unoproj",
     "../Fuse.Controls.DatePicker/Fuse.Controls.DatePicker.unoproj",
+    "../Fuse.Controls.DrawingPanel/Fuse.Controls.DrawingPanel.unoproj",
     "../Fuse.Controls.Native/Fuse.Controls.Native.unoproj",
     "../Fuse.Controls.Navigation/Fuse.Controls.Navigation.unoproj",
     "../Fuse.Controls.Panels/Fuse.Controls.Panels.unoproj",

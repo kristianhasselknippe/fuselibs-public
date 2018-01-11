@@ -12,6 +12,7 @@
     "Fuse.Launcher.Maps",
     "Fuse.Launcher.Phone",
     "Fuse.Launcher",
+    "Fuse.Controls.DrawingPanel",
     "Fuse.Audio"
   ],
   "Projects": [
