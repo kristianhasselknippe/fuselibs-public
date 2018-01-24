@@ -441,6 +441,18 @@ function Model(initialState, stateInitializer)
 				removeAsParentFrom(index+i, node[index+i]);
 			}
 			node.splice(index, count);
+
+			// Fixup parent references for elements that appear later in the list
+			for(var i = index; i < node.length; ++i) {
+				var itemNode = node[i];
+				if (itemNode instanceof Object) {
+					var itemMeta = idToMeta.get(itemNode.__fuse_id);
+					var parentMeta = itemMeta.parents.find(function(x) { return isSameParentMeta(x, { key: i+count, meta: meta }) });
+					parentMeta.key = parseInt(parentMeta.key) - count;
+					itemMeta.invalidatePath();
+				}
+			}
+
 			var removePath = getPath().concat(index);
 			for (var i = 0; i < count; i++) {
 				TreeObservable.removeAt.apply(store, removePath);
@@ -467,6 +479,18 @@ function Model(initialState, stateInitializer)
 			node.splice(index, 0, null);
 			node[index] = item = wrap(index, item)
 			
+
+			// Fixup parent references for elements that appear later in the list
+			for(var i = index+1; i < node.length; ++i) {
+				var itemNode = node[i];
+				if (itemNode instanceof Object) {
+					var itemMeta = idToMeta.get(itemNode.__fuse_id);
+					var parentMeta = itemMeta.parents.find(x => isSameParentMeta(x, { key: (i-1), meta: meta }));
+					parentMeta.key = parseInt(parentMeta.key) + 1;
+					itemMeta.invalidatePath();
+				}
+			}
+
 			TreeObservable.insertAt.apply(store, getPath().concat([index, item]));
 			changesDetected++;
 		}
