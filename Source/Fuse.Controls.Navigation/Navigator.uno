@@ -229,7 +229,7 @@ namespace Fuse.Controls
 				//always reuse non-templates as there is only one
 				var nonTemplate = !GetControlPageData(curPageVisual).FromTemplate;
 					
-				if (compat || reuse || replace || nonTemplate)
+				if (/*compat ||*/ reuse || replace || nonTemplate)
 				{
 					var np = new NavPage{ Visual = curPageVisual, RouterPage = routerPage };
 					var result = new PrepareResult{ Page = np, Routing = RoutingResult.MinorChange };
