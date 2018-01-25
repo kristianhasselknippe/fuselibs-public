@@ -13,6 +13,29 @@ namespace Fuse.Selection
 		None,
 	}
 
+	public class SelectionChangedArgs : ValueChangedArgs<string[]>, Scripting.IScriptEvent
+	{	
+		public SelectionChangedArgs(string[] newSelection)
+			: base(newSelection)
+		{
+			
+		}
+		
+		void Scripting.IScriptEvent.Serialize(Scripting.IEventSerializer s)
+		{
+			var a = "[";
+			for (var i = 0; i < Value.Length; i++) {
+				if (i > 0) a += ",";
+				a += Json.Escape(Value[i]);
+			}
+			a += "]";
+
+			s.AddString("values", a);
+		}
+	}
+	
+	public delegate void SelectionChangedHandler(object sender, SelectionChangedArgs args);
+
 	/**
 		@Selection is used to create a selection control, such as an item list, radio buttons, or picker. The @Selection itself defines the selection, managing the high-level behaviour and tracking the current value. A variety of @Selectable objects define which items can be selected.
 		
@@ -328,7 +351,7 @@ namespace Fuse.Selection
 		/**
 			Raised whenever the selection state changes.
 		*/
-		public event EventHandler SelectionChanged;
+		public event SelectionChangedHandler SelectionChanged;
 		
 		enum How
 		{
@@ -358,7 +381,7 @@ namespace Fuse.Selection
 			
 			OnPropertyChanged(ValueName);
 			if (SelectionChanged != null)
-				SelectionChanged(this, EventArgs.Empty);
+				SelectionChanged(this, new SelectionChangedArgs(_values.ToArray()));
 		}
 		
 		/*
