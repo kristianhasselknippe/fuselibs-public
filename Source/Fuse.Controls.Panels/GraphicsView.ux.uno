@@ -342,6 +342,9 @@ namespace Fuse.Controls
 				if defined(FUSELIBS_PROFILING)
 					Profiling.BeginDraw();
 
+				if defined(SYSTEM_DIAGNOSTICS)
+					SystemDiagnostics.BeginDraw();
+
 				if (gv.BeginDraw(size))
 				{
 					extern double t;
@@ -378,6 +381,9 @@ namespace Fuse.Controls
 
 				if defined(FUSELIBS_PROFILING)
 					Profiling.EndDraw();
+
+				if defined(SYSTEM_DIAGNOSTICS)
+					SystemDiagnostics.EndDraw();
 
 				if (rotationHackRedrawCount > 0)
 				{

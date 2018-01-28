@@ -252,6 +252,9 @@ namespace Fuse
 			if defined(FUSELIBS_PROFILING)
 				Profiling.BeginUpdate();
 
+			if defined(SYSTEM_DIAGNOSTICS)
+				Fuse.SystemDiagnostics.BeginUpdate();
+
 			UpdateManager.Update();
 
 			if defined(MOBILE)
@@ -259,6 +262,9 @@ namespace Fuse
 
 			if defined(FUSELIBS_PROFILING)
 				Profiling.EndUpdate();
+
+			if defined(SYSTEM_DIAGNOSTICS)
+				Fuse.SystemDiagnostics.EndUpdate();
 		}
 	}
 }
