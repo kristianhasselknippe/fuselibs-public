@@ -34,13 +34,20 @@ namespace Fuse.Controls
 		public DiagnosticsPanelBase()
 		{
 			_properties.Add(FramesPerSecond, 0);
+			_properties.Add(FrameIndex, 0);
 		}
 
 		const string FramesPerSecond = "frames_per_second";
+		const string FrameIndex = "frame_index";
 
 		int CurrentFramesPerSecond
 		{
 			set { _properties[FramesPerSecond] = value; }
+		}
+
+		int CurrentFrameIndex
+		{
+			set { _properties[FrameIndex] = value; }
 		}
 
 		List<double> _frames = new List<double>();
@@ -55,6 +62,7 @@ namespace Fuse.Controls
 				_frames.RemoveAt(0);
 
 			_previousFrame = args.FrameIndex;
+			CurrentFrameIndex = args.FrameIndex;
 
 			var frameTime = Math.Max(args.FrameTime, 1.0 / 60.0);
 
