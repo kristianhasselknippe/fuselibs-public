@@ -21,6 +21,7 @@
     "../Fuse.Storage/Fuse.Storage.unoproj",
     "../Fuse.Android/Fuse.Android.unoproj",
     "../Fuse.iOS/Fuse.iOS.unoproj",
+    "../Fuse.AsyncIO/Fuse.AsyncIO.unoproj",
     "../Fuse.UserEvents/Fuse.UserEvents.unoproj",
     "../Polyfills.Window/Polyfills.Window.unoproj",
     "../Fuse.Models/Fuse.Models.unoproj",
