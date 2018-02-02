@@ -452,6 +452,7 @@ function Model(initialState, stateInitializer)
 		function set(key, value, omitStateChange)
 		{
 			var path = getPath();
+			if (!path) { return; /* object is no longer rooted - not part of the model*/ }
 			if (!setInternal(path, key, value, omitStateChange)) { return; }
 
 			var argPath = path.concat(key, value instanceof Array ? [value] : value);
