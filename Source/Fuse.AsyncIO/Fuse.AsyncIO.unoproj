@@ -1,0 +1,20 @@
+{
+  "Copyright": "Copyright (c) Fusetools AS 2017",
+  "Description": "Async IO",
+  "Publisher": "Fusetools AS",
+  "Version": "1.6.0-rc1",
+  "Package": {
+    "ProjectUrl": "https://fusetools.com"
+  },
+  "Packages": [
+    "Uno.Threading",
+    "Uno.Collections"
+  ],
+  "Projects": [
+    "../Fuse.Common/Fuse.Common.unoproj",
+    "../Fuse.Scripting/Fuse.Scripting.unoproj"
+  ],
+  "Includes": [
+    "*.uno:Source",
+  ]
+}
