@@ -1,5 +1,6 @@
 using Uno;
 using Uno.UX;
+using Fuse.AsyncIO;
 using Fuse.Scripting;
 using Uno.Text;
 using Uno.Collections;
@@ -38,6 +39,7 @@ namespace FuseJS
 			AddMember(new NativeFunction("decodeLatin1", (NativeCallback)DecodeLatin1));
 			AddMember(new NativeFunction("encodeBuffer", (NativeCallback)EncodeBuffer));
 			AddMember(new NativeFunction("decodeBuffer", (NativeCallback)DecodeBuffer));
+			AddMember(new NativeFunction("encodeBufferHandle", (NativeCallback)EncodeBufferHandle));
 		}
 
 
@@ -84,6 +86,35 @@ namespace FuseJS
 				throw new Error("Requires an ArrayBuffer as the first argument.");
 
 			return Uno.Text.Base64.GetString(buffer);
+		}
+
+		object EncodeBufferHandle(Context context, object[] args)
+		{
+			var arg = ((IEnumerable<object>)args).FirstOrDefault();
+			BufferHandle bufferHandle;
+			object externalObject;
+			TryGetExternalObject(arg, out externalObject);
+			bufferHandle = externalObject as BufferHandle;
+			if (bufferHandle == null)
+				throw new Error("Requires a BufferHandle as the first argument.");
+
+			return Uno.Text.Base64.GetString(bufferHandle.Buffer);
+		}
+
+		static bool TryGetExternalObject(object obj, out object externalObject)
+		{
+			var sobj = obj as Fuse.Scripting.Object;
+			if (sobj != null && sobj.ContainsKey("external_object"))
+			{
+				var ext = sobj["external_object"] as Fuse.Scripting.External;
+				if (ext != null)
+				{
+					externalObject = ext.Object;
+					return true;
+				}
+			}
+			externalObject = null;
+			return false;
 		}
 
 		/** @scriptmethod decodeLatin1(stringToDecode)
