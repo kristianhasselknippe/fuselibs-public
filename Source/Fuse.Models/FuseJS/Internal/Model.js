@@ -486,6 +486,8 @@ function Model(initialState, stateInitializer)
 			// Fixup parent references for elements that appear later in the list
 			for(var i = index+1; i < node.length; ++i) {
 				var itemNode = node[i];
+				if (itemNode instanceof Function) 
+					continue
 				if (itemNode instanceof Object) {
 					var itemMeta = idToMeta.get(itemNode.__fuse_id);
 					var parentMeta = itemMeta.parents.find(x => isSameParentMeta(x, { key: (i-1), meta: meta }));
