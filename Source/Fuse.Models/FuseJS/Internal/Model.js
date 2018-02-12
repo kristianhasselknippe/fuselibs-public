@@ -102,7 +102,7 @@ function Model(initialState, stateInitializer)
 
 		var propGetters = {}
 
-		if (!(state instanceof Array)) {
+		if (!(state instanceof Array) && !(state instanceof Function)) {
 			registerProps(state);
 		}
 
@@ -446,6 +446,8 @@ function Model(initialState, stateInitializer)
 			// Fixup parent references for elements that appear later in the list
 			for(var i = index; i < node.length; ++i) {
 				var itemNode = node[i];
+				if (itemNode instanceof Function)
+					continue
 				if (itemNode instanceof Object) {
 					var itemMeta = idToMeta.get(itemNode.__fuse_id);
 					var parentMeta = itemMeta.parents.find(function(x) { return isSameParentMeta(x, { key: i+count, meta: meta }) });
