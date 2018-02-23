@@ -124,6 +124,10 @@ function Model(initialState, stateInitializer)
 			for (var i in keys) {
 				var p = keys[i];
 				if (p === "constructor") { continue; }
+				if (p === "caller" || p === "arguments") {
+					console.log("PPP: " + JSON.stringify(p))
+					continue
+				}
 				var value = state[p];
 
 				if (value instanceof Function) {
@@ -467,11 +471,14 @@ function Model(initialState, stateInitializer)
 					continue;
 				}
 				var itemMeta = idToMeta.get(itemNode.__fuse_id);
-				var parentMeta = itemMeta.parents.find(function(x) {
-					return isSameParentMeta(x, { key: (i - offset), meta: meta });
-				});
-				parentMeta.key = parseInt(parentMeta.key) + offset;
-				itemMeta.invalidatePath();
+				console.log("ItemMeta: " + JSON.stringify(itemMeta));
+				if (typeof itemMeta !== "undefined") {
+					var parentMeta = itemMeta.parents.find(function(x) {
+						return isSameParentMeta(x, { key: (i - offset), meta: meta });
+					});
+					parentMeta.key = parseInt(parentMeta.key) + offset;
+					itemMeta.invalidatePath();
+				}
 			}
 		}
 
