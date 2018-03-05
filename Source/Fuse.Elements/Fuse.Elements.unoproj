@@ -2,7 +2,7 @@
   "Copyright": "Copyright (c) Fusetools AS 2017",
   "Description": "Multi-platform UI library based on 2D elements",
   "Publisher": "Fusetools AS",
-  "Version": "1.6.0-rc1",
+  "Version": "1.7.0-rc1",
   "Package": {
     "ProjectUrl": "https://fusetools.com"
   },
@@ -55,7 +55,6 @@
     "Caching/ElementBatcher.uno:Source",
     "Caching/ElementBatch.uno:Source",
     "Drawing/ImageFill.uno:Source",
-    "Drawing/Rectangle.uno:Source",
     "Drawing/Scale9Rectangle.uno:Source",
     "Effects/Effect.uno:Source",
     "Element.Actions.uno:Source",

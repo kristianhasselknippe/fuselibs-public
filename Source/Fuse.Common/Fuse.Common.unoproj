@@ -2,13 +2,14 @@
   "Copyright": "Copyright (c) Fusetools AS 2017",
   "Description": "User experience design and tooling platform (core package)",
   "Publisher": "Fusetools AS",
-  "Version": "1.6.0-rc1",
+  "Version": "1.7.0-rc1",
   "Package": {
     "ProjectUrl": "https://fusetools.com"
   },
   "InternalsVisibleTo": [
     "Fuse.Views",
     "Fuse.Android",
+    "Fuse.Android.TextRenderer",
     "Fuse.Animations",
     "Fuse.Common.Test",
     "Fuse.Controls.Native",
@@ -21,6 +22,7 @@
     "Fuse.Desktop",
     "Fuse.Drawing.Surface",
     "Fuse.Drawing.Surface.Test",
+    "Fuse.Effects",
     "Fuse.Elements.Test",
     "Fuse.Elements",
     "Fuse.Nodes",

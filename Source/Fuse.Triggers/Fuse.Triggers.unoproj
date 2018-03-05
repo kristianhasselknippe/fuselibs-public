@@ -2,7 +2,7 @@
   "Copyright": "Copyright (c) Fusetools AS 2017",
   "Description": "Library of common trigger behaviors for UIs",
   "Publisher": "Fusetools AS",
-  "Version": "1.6.0-rc1",
+  "Version": "1.7.0-rc1",
   "Package": {
     "ProjectUrl": "https://fusetools.com"
   },
@@ -56,7 +56,6 @@
     "Deferred.uno:Source",
     "Disabled.uno:Source",
     "IValue.uno:Source",
-    "KeyboardVisible.uno:Source",
     "OnKeyPress.uno:Source",
     "Platforms.uno:Source",
     "ProgressAnimation.uno:Source",

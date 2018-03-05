@@ -2,7 +2,7 @@
   "Copyright": "Copyright (c) Fusetools AS 2017",
   "Description": "Low-level Node and Visual framework",
   "Publisher": "Fusetools AS",
-  "Version": "1.6.0-rc1",
+  "Version": "1.7.0-rc1",
   "Package": {
     "ProjectUrl": "https://fusetools.com"
   },
@@ -34,7 +34,9 @@
     "Fuse.Motion",
     "Fuse.Navigation",
     "Fuse.Reactive.Bindings",
+    "Fuse.Reactive.Bindings.Test",
     "Fuse.Scripting.JavaScript",
+    "Fuse.Scripting.JavaScript.Test",
     "Fuse.Selection",
     "Fuse.Testing",
     "Fuse.Text",

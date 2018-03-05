@@ -10,9 +10,10 @@ namespace Fuse.Reactive.Test
 {
 	public class SynchronusDataSource: Node, Node.ISiblingDataProvider, IObject
 	{
-		object ISiblingDataProvider.Data
+		ContextDataResult ISiblingDataProvider.TryGetDataProvider( DataType type, out object provider )
 		{
-			get { return this; }
+			provider = this;
+			return ContextDataResult.Continue;
 		}
 
 		string[] IObject.Keys
@@ -180,6 +181,8 @@ namespace Fuse.Reactive.Test
 
 				e.N = "Lol";
 				Assert.AreEqual("Hola, LOL! You have 2-ish new fruits!", e.t2.Value);
+
+				Assert.AreEqual("Boolean operators: True, True, True, False, False, False", e.t4.Value);
 			}
 		}
 

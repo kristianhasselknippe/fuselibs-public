@@ -5,70 +5,88 @@ namespace Fuse
 {
 	public partial class Node
 	{
-		/** When implemented by a `Node`, it indicates that the node provides data for its siblings. */
+		/** When implemented by a `Node`, it indicates that the node provides data for its siblings. 
+			@hide
+		*/
+		//these, and the next interface, and associated types, are not meant to be public
+		//UNO: https://github.com/fusetools/uno/issues/1524
 		public interface ISiblingDataProvider
 		{
-			object Data { get; }
+			ContextDataResult TryGetDataProvider( DataType type, out object provider );
 		}
 
-		/** When implemented by a `Node`, it indicates that the node provides data for its children. */
+		/** When implemented by a `Node`, it indicates that the node provides data for its children. 
+			@hide
+			*/
 		public interface ISubtreeDataProvider
 		{
-			object GetData(Node child);
+			ContextDataResult TryGetDataProvider( Node child, DataType type, out object provider );
+		}
+		
+		/** @hide */
+		public enum DataType
+		{
+			/** A string key in the context */
+			Key,
+			/** A prime data context */
+			Prime,
 		}
 
-		public interface IDataEnumerator
+		/** @hide Refer to ISibilingDataProvider note */
+		public enum ContextDataResult
 		{
-			/** Receives the next data item in a data context enumeration.
-				Returns `true` if enumeration should continue, `false` if enumeration should be aborted. */
-			bool NextData(object data);
+			/** If data is not found in the provider then continue looking */
+			Continue,
+			/** Stop looking even if the data is not found in the provider */
+			Stop,
+			/** The provider for the key may be actual null value and the search should stop */
+			NullProvider,
+		}
+		
+		internal bool TryGetPrimeDataContext(out object result)
+		{
+			IObject providerIgnore = null;
+			return TryFindData( DataType.Prime, null, out result, out providerIgnore );
 		}
 
-		class FirstDataEnumerator: IDataEnumerator
+		bool AcquireData(DataType type, string key, object data, out object result, out IObject provider)
 		{
-			public object Data { get; private set; }
-			public bool NextData(object data) { Data = data; return false; }
-		}
-
-		internal abstract class DataFinder: IDataEnumerator
-		{
-			readonly string _key;
-			protected string Key { get { return _key; } }
-			protected DataFinder(string key) { _key = key; }
-			public bool NextData(object data)
+			result = null;
+			provider = data as IObject;
+			
+			//DEPRECATED: empty keys are deprecated, see `SubscribeData`
+			if ( (key == "" || type == DataType.Prime) && data != null)
 			{
-				if (_key == "")
+				result = data;
+				return true;
+			}
+			else if (provider != null)
+			{
+				if (provider.ContainsKey(key))
 				{
-					Resolve(null, data);
+					result = provider[key];
+					return true;
+				}
+			}
+
+			return false;
+		}
+		
+		/* New functionality should not be built assuming enumeration is possible. It is likely we'll move towards a system that doesn't require such walking of the tree, where walking could be expensive. This form is kept now only as the least effort migration path. */
+		bool TryFindData(DataType type, string key, out object result, out IObject provider)
+		{
+			result = null;
+			provider = null;
+			
+			if (type == DataType.Prime)
+			{
+				if (key != null)
+				{
+					Fuse.Diagnostics.InternalError( "Invalid key for DataType.Prime", this);
 					return false;
 				}
-				else
-				{
-					var obj = data as IObject;
-					if (obj != null)
-					{
-						if (obj.ContainsKey(_key))
-						{
-							Resolve(obj, obj[_key]);
-							return false;
-						}
-					}
-				}
-
-				return true; // keep looking 
 			}
-			protected abstract void Resolve(IObject provider, object data);
-		}
-
-		public object GetFirstData()
-		{
-			var den = new FirstDataEnumerator();
-			EnumerateData(den);
-			return den.Data;
-		}
-
-		public void EnumerateData(IDataEnumerator e)
-		{
+			
 			var n = this;
 
 			while (n != null)
@@ -79,8 +97,14 @@ namespace Fuse
 					var subdp = np as ISubtreeDataProvider;
 					if (subdp != null) 
 					{
-						var data = subdp.GetData(n);
-						if (data != null && !e.NextData(data)) return;
+						object data;
+						var sr = subdp.TryGetDataProvider( n, type, out data );
+						if (AcquireData(type, key, data, out result, out provider))
+							return true;
+						if (sr == ContextDataResult.NullProvider)
+							return true;
+						if (sr == ContextDataResult.Stop)
+							return false;
 					}
 				}
 
@@ -92,16 +116,24 @@ namespace Fuse
 						var sdp = dp as ISiblingDataProvider;
 						if (sdp != null)
 						{
-							var data = sdp.Data;
-							if (data != null && !e.NextData(data)) return;
+							object data;
+							var sr = sdp.TryGetDataProvider( type, out data );
+							if (AcquireData(type, key, data, out result, out provider))
+								return true;
+							if (sr == ContextDataResult.NullProvider)
+								return true;
+							if (sr == ContextDataResult.Stop)
+								return false;
 						}
 					}
 				}
 
 				n = n.ContextParent;
 			}
+			
+			return false;
 		}
-
+		
 		internal protected void BroadcastDataChange(object oldData, object newData)
 		{
 			string[] newKeys = null;
@@ -139,6 +171,7 @@ namespace Fuse
 			return false;
 		}
 
+		/** @deprecated The public API using this interface has been deprecated 2018-01-09 */
 		public interface IDataListener
 		{
 			void OnDataChanged();
@@ -169,8 +202,14 @@ namespace Fuse
 			}
 		}
 		
-		public void AddDataListener(string key, IDataListener listener)
+		void AddDataListener(DataType type, string key, IDataListener listener)
 		{
+			//the broadcast mechanism has yet to be updated to report PrimeData, the old {} binding
+			//probably needs to be removed first in order to keep it safe. For now continue to listen to
+			//the empty key for the Prime data context
+			if (type == DataType.Prime && key == null)
+				key = "";
+				
 			if (!CheckDataKey(key)) return;
 				
 			List<IDataListener> listeners;
@@ -182,11 +221,110 @@ namespace Fuse
 			listeners.Add(listener);
 		}
 
-		public void RemoveDataListener(string key, IDataListener listener)
+		void RemoveDataListener(DataType type, string key, IDataListener listener)
 		{
+			//see AddDataListener
+			if (type == DataType.Prime && key == null)
+				key = "";
+				
 			if (!CheckDataKey(key)) return;
 				
 			_dataListeners[key].Remove(listener);
+		}
+
+		/**
+			Creates a subscription to context data on a node. The return value will be populated with the current values.
+			
+			Subscriptions should no tbe created before this node is rooted, and will behave unpredictably if they are.
+			
+			You must call `Dispose` on the object when done with it, at the latest during unrooting.
+		*/
+		internal NodeDataSubscription SubscribeData(string key, IDataListener listener)
+		{
+			if (!IsRootingStarted)
+			{
+				Fuse.Diagnostics.InternalError( "SubscribeData called prior to rooting", this );
+				//potential errors in our old code make this unsafe to throw, in a future version we can
+			}
+			
+			if (key == "")
+			{
+				//DEPRECATED: 2018-01-30
+				Fuse.Diagnostics.UserError( "Binding to an empty key, `{}`, is deprecated due to ambiguity. Use the `data()` expression instead.", this);
+			}
+				
+			var dw = new NodeDataSubscription(this, DataType.Key, key, listener);
+			return dw;
+		}
+
+		internal NodeDataSubscription SubscribePrimeDataContext(IDataListener listener)
+		{
+			if (!IsRootingStarted)
+			{
+				Fuse.Diagnostics.InternalError( "SubscribeData called prior to rooting", this );
+				//potential errors in our old code make this unsafe to throw, in a future version we can
+			}
+				
+			var dw = new NodeDataSubscription(this, DataType.Prime, null, listener);
+			return dw;
+		}
+
+		/**
+			A subscription to context data.
+			
+			You must call `Dispose` when done listening.
+		*/
+		internal sealed class NodeDataSubscription : IDataListener, IDisposable
+		{
+			DataType _type;
+			string _key;
+			bool _hasData;
+			object _data;
+			IObject _provider;
+			
+			/** `true` if there is data, `false` otherwise */
+			public bool HasData { get { return _hasData; } }
+			/** The data which has been found. This will be `null` if `HasData == false`. It may be `null` even if `HasData == true`, indicating it found a null */
+			public object Data { get { return _data; } }
+			/** The providing object for the data */
+			public IObject Provider { get { return _provider; } }
+			
+			Node _origin;
+			IDataListener _listener;
+			
+			internal NodeDataSubscription(Node origin, DataType type, string key, IDataListener listener)
+			{
+				_type = type;
+				_key = key;
+				_origin = origin;
+				_hasData = _origin.TryFindData( _type, _key, out _data, out _provider );
+				_listener = listener;
+				
+				if (_listener != null)	
+					_origin.AddDataListener( _type, _key, this );
+			}
+			
+			void IDataListener.OnDataChanged()
+			{
+				if (_origin == null)
+					return;
+					
+				_hasData = _origin.TryFindData( _type, _key, out _data, out _provider );
+				if (_listener != null)
+					_listener.OnDataChanged();
+			}
+			
+			public void Dispose()
+			{
+				if (_listener != null)	
+					_origin.RemoveDataListener( _type, _key, this );
+					
+				_origin = null;
+				_listener = null;
+				_hasData = false;
+				_data = null;
+				_provider = null;
+			}
 		}
 	}
 }
