@@ -405,8 +405,7 @@ function Model(initialState, stateInitializer)
 
 		var cachedPath = null;
 		function getPath() {
-			if (cachedPath === null) { cachedPath = computePath(); }
-			return cachedPath;
+			return computePath();
 		} 
 		
 		meta.getPath = getPath;
