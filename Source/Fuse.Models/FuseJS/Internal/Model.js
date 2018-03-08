@@ -124,6 +124,10 @@ function Model(initialState, stateInitializer)
 			for (var i in keys) {
 				var p = keys[i];
 				if (p === "constructor") { continue; }
+				if (p === "caller" || p === "arguments") {
+					console.log("PPP: " + JSON.stringify(p))
+					continue
+				}
 				var value = state[p];
 
 				if (value instanceof Function) {
@@ -363,44 +367,56 @@ function Model(initialState, stateInitializer)
 					state[key] = wrapFunction(value)
 					set(key, state[key]);
 				}
+				return;
 			}
-			else if (isThenable(value)) {
+
+			if (isThenable(value)) {
 				dealWithPromise(key, value);
+				return;
 			}
-			else if (value instanceof Object) {
-				var keyMeta = stateToMeta.get(value);
-				var oldValue = meta.node[key];
 
-				var newValue;
-				if (keyMeta instanceof Object) {
-					// Value is already instrumented, but re-instrument to add as parent
-					newValue = instrument({meta: meta, key: key}, keyMeta, value);
-				}
-				else if (value instanceof Object) {
-					newValue = instrument({meta: meta, key: key}, (value instanceof Array) ? [] : {}, value);
-				}
-				else {
-					newValue = value;
-				}
+			var oldNode = meta.node[key];
 
-				if (oldValue instanceof Object &&
-					keyMeta instanceof Object &&
-					oldValue.__fuse_id === keyMeta.id
-				)
-				{
-					if (!keyMeta.isClass) { 
-						keyMeta.diff(visited);
-					}
-				}
-				else {
-					removeAsParentFrom(key, oldValue);
-					set(key, newValue);
-				}
-			}
-			else if (value !== node[key])
+			if(!(value instanceof Object))
 			{
-				set(key, value);
+				// We're dealing with a primitive value
+
+				if (oldNode instanceof Object)
+					removeAsParentFrom(key, oldNode);
+
+				if (value !== oldNode)
+					set(key, value);
+
+				return;
 			}
+
+			var newNode;
+			var newValueMeta = stateToMeta.get(value);
+			if (newValueMeta instanceof Object)
+			{
+				if (oldNode instanceof Object && newValueMeta.id === oldNode.__fuse_id)
+				{
+					// The object has not changed since the last diff
+					if (!newValueMeta.isClass) {
+						// If it's a plain object (no methods that could trigger change detection),
+						// perform change detection on its behalf
+						newValueMeta.diff(visited);
+					}
+					return;
+				}
+
+				// Value is already instrumented, but re-instrument to add as parent
+				newNode = instrument({meta: meta, key: key}, newValueMeta.node, value);
+			}
+			else {
+				// This is an object we haven't seen before, so instrument it
+				newNode = instrument({meta: meta, key: key}, (value instanceof Array) ? [] : {}, value);
+			}
+
+			if (oldNode instanceof Object)
+				removeAsParentFrom(key, oldNode);
+
+			set(key, newNode);
 		}
 
 		var cachedPath = null;
@@ -412,16 +428,26 @@ function Model(initialState, stateInitializer)
 		meta.invalidatePath = function() { cachedPath = null; }
 
 		// Finds a valid path to the root TreeObservable, if any
-		function computePath()
+		function computePath(visited)
 		{
+			visited = visited || new Set();
+
+			if (meta.parents.indexOf(null) >= 0) {
+				// We are the root node
+				return [];
+			}
+			
 			for (var i = 0; i < meta.parents.length; i++) {
-				if (meta.parents[i] === null) { return [] }
-				else 
-				{
-					var arr = meta.parents[i].meta.getPath();
-					if (arr instanceof Array) {
-						return arr.concat(meta.parents[i].key);
-					}	
+				var parent = meta.parents[i];
+
+				if(visited.has(parent.meta))
+					continue;
+
+				visited.add(parent.meta);
+				
+				var arr = parent.meta.getPath(visited);
+				if (arr instanceof Array) {
+					return arr.concat(parent.key);
 				}
 			}
 		}
@@ -434,6 +460,25 @@ function Model(initialState, stateInitializer)
 
 			var argPath = path.concat(key, value instanceof Array ? [value] : value);
 			TreeObservable.set.apply(store, argPath);
+		}
+
+		function updateArrayParentIndices(start, offset) {
+			// Updates the indices of parent references after removing or inserting elements in the middle of an array
+			for(var i = start; i < node.length; ++i) {
+				var itemNode = node[i];
+				if (!(itemNode instanceof Object)) {
+					continue;
+				}
+				var itemMeta = idToMeta.get(itemNode.__fuse_id);
+				console.log("ItemMeta: " + JSON.stringify(itemMeta));
+				if (typeof itemMeta !== "undefined") {
+					var parentMeta = itemMeta.parents.find(function(x) {
+						return isSameParentMeta(x, { key: (i - offset), meta: meta });
+					});
+					parentMeta.key = parseInt(parentMeta.key) + offset;
+					itemMeta.invalidatePath();
+				}
+			}
 		}
 
 		function removeRange(index, count) {

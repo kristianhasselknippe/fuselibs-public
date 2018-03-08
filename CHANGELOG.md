@@ -1,7 +1,77 @@
 # Unreleased
 
+## Image loading errors
+- Added more info to the messages reported on failure during image loading.
+
+## Fuse.Scripting
+- Marked `NativeMember.Context` as Obsolete. Either use passed-down `Context`, or dispatch to `ThreadWorker` instead.
+
+## Node Data Context
+
+# 1.7
+
+### 1.7.0
+
+## PageControl
+- Fixed a crash resulting from adding dynamic pages and binding by name
+
+## Partial Curves
+- Added support for drawing partial curves to `Path` and `Curve`. Refer to the `PathStart`, `PathLength` and `PathEnd` properties.
+- Added the path expressions `pathPointAtDistance` and `pathTangentAngleAtDistance` for locating an offset along a `Path` or `Curve` and the heading.
+
+## Router
+- Fixed `goBack` to properly modify the route with two duplicate routes in the history## JavaScript 
+- Several functions in `ScriptModule` and related classes have been marked `internal`. These were never meant to be part of the public API.
+- Added `JavaScript.Names` with option `Require` to prevent injecting names into the JavaScript code namespace
+
+## TextColor Opacity
+- Fixed a failure to render translucent `TextColor` correctly
+- Fixed the rendering of opaque emoji when `TextColor` is translucent (they will not also be translucent, though still  use the font coloring)
+
+### Node Data Context
+- Removed some deprecated methods and classes from `Node`: `IDataListener`, `OnDataChanged`. These were not meant to be public.
+- Deprecated `{}` in favour of the new `data()` function. `{}` had unusual binding rules and would often not bind to the intended context. `data()` always binds to the prime data context, it's unambiguous and predictable.
+- Fixed the object provided to JavaScript callbacks in `args.data`. It will now always be the prime data context, not just the next contextual data.
+- Deprecated and removed several functions which were not meant to be public. The deprecated ones will be removed shortly, as the current interface cannot be supported in the future.   `ISiblingDataProvider`, `ISubtreeDataProvider`, `IDataEnumerator`, `Node.GetFirstData`, `Node.EnumerateData`, `Node.BroadcastDataChange`, `Node.IDataListenere`, `Node.OnDataChanged`, `Node.AddDataListener`, `Node.RemoveDataListener`, `IObject`, `IArray`
+
+### LinearGradient
+- Fixes invalid gradients in desktop preview (DotNet targets)
+
+### Navigator
+- Fixed the invalid reuse of an existing page if the context does not match
+
+### Expressions
+- Added support for boolean `==` and `!=` expressions, which can be used for things like negating boolean expressions.
+- Added support for the logical not operator. This means you can do "!someBoolean" to logically negate it.
+- Fixed negation operator (`-`, eg. `-someValue`).
+- Added vector accessors `x(v)`, `y(v)`, `z(v)`, `w(v)` to access the component values of float/2/3/4 values. (Note: `x` and `y` have an overloaded meaning now, also providing Element position).
+- Added `atanVector` to compute arc-tangent from a `float2` input
+
+## FuseJS
+- Fixed bug where arrays inside arrays would produce unexpected behavior
+- Fixed bug where a cycle in the object graph would result in infinite recursion in some cases
+- Fixed bug where changing the value of a property from an object to a primitive value would cause odd behavior in some cases.
+
+### ScrollView
+- Fixed bug where ScrollView's inside a NativeViewHost would scroll to fast
+- Fixed bug where the scrolling indicator in a native ScrollView would not show on iOS
+- Added `ContentSize` property on the `Fuse.Controls.Native.IScrollViewHost` interface. Needed by iOS to layout the native scrollview correctly
+
+### Control
+- Setting the `Background` property to something else than SolidColor or StaticSolidColor has been deprecated, and gives a warning. Support for this will be removed in an upcoming release.
+
+### Video
+- Setting the `StretchMode` property to `Scale9` on VideoVisual has been depecated, and gives a warning. Support for this will be removed in an upcoming release.
+- Removed `protected` constructor for `LayoutFunction`, this was not meant to be public. Sealed the derived classes, they were not meant to be extendable.
+
 
 # 1.6
+
+## 1.6.1
+
+### Fuse.Scripting
+- Restore accidentally broken NativeEvent.RaiseAsync() API.
+- Rolled back NativeProperty constructor API to the pre-1.6 state. Code updated to 1.6 needs to be rolled back as well.
 
 ## 1.6.0
 
@@ -14,6 +84,7 @@
 - Added `ContentSize` property on the `Fuse.Controls.Native.IScrollViewHost` interface. Needed by iOS to layout the native scrollview correctly
 
 ### Let
+- Introduced an experimental `Let` feature that allows creating expression aliases and local variables in UX
 - Added specific type version of `Let`, such as `LetFloat` and `LetString`. This improve the ability to connect pieces of the UX together and do animation/transitions in UX without using JavaScript.
 
 ### Instantiator
@@ -34,7 +105,7 @@
 - Fixed the ordering of events so that `SelectionChanged` is emitted after the bound value is updated
 
 ### Expressions
-- Deprecated `UnaryOperator.OnNewOperand` and `OnLostOperand`.  These are part of a broken pattern of using unary expressions (and were not present on Binary/Ternary/QuaternaryOperator). You generally shouldn't need this, and should implement `Compute` instead. In the rare cases you need the vrituals you'll need to extend Expression and implement `Subscribe`, using `ExpressionListener` as a way to capture the correct functionality.
+- Deprecated `UnaryOperator.OnNewOperand` and `OnLostOperand`.  These are part of a broken pattern of using unary expressions (and were not present on Binary/Ternary/QuaternaryOperator). You generally shouldn't need this, and should implement `Compute` instead. In the rare cases you need the virtuals you'll need to extend Expression and implement `Subscribe`, using `ExpressionListener` as a way to capture the correct functionality.
 - Moved `VarArgFunction.Argument` to `Expression.Argument`. It's in a base class so still has visibility in `VarArgFunction`.
 - `VarArgFunction.Subscription.OnNewData` and `OnLostData` have been sealed. They should not have been open for overriding before as it conflicts with the inner workings on the class. Only the `OnNewPartialArguments` and `OnNewArguments` should be overridden.
 - Improved error handling on several operators and math functions. Instead of exceptions these should produce the standard conversion/computation warnings for invalid types.
@@ -48,7 +119,7 @@
 - Added `Instance.Item` to work similar to an `Each` with a single data item
 
 ### Expression Functions
-- Added `nonNull` for special evaluation handling for temporary null values. This may be useful in migrating code that is now producing many incompatbile argument warnings.
+- Added `nonNull` for special evaluation handling for temporary null values. This may be useful in migrating code that is now producing many incompatible argument warnings.
 - Changed operators / functions to report warnings if they are provided with invalid arguments. This should help locate errors in code that were previously silent and just didn't evaluate, or evaluated wrong.  Consider using the `??` operator, and the `isNull`, `isDefined` and `nonNull` functions to deal with non-data scenarios.
 - Removed `protected` from `BinaryOperator.OnNewOperands`. This was intended to be `internal` as there is no correct way to overload it. If you happened to use it we can provide a different base-class to use for you.
 
@@ -64,9 +135,6 @@
 ### Conversions
 - Added `float()` expression to force conversion to float values
 - Added `string()` expression to force conversion to string values
-
-### Let
-- Introduced an experimental `Let` feature that allows creating expression aliases and local variables in UX
 
 ### Timer
 - Fixed issue where creating a repeating `Timer` with 0 delay in JavaScript would not prevent the worker thread to become idle.
@@ -96,7 +164,7 @@
 - Fixed iOS issue where the return key would display "next" instead of "return".
 
 ### Navigation
-- `Navigator` blocks input to pages while trasitioning to new pages. To get the old behaviour, where input is not blocked, set `<Navigator BlockInput="Never">`.
+- `Navigator` blocks input to pages while transitioning to new pages. To get the old behaviour, where input is not blocked, set `<Navigator BlockInput="Never">`.
 
 ### Fuse.Reactive
 - Added `OnLostData` to the `IListener` interface. This is needed to properly deal with changes in context in
@@ -110,9 +178,12 @@
 ### Fuse.Panel
 - Fixed a bug where `IsFrozen` would ignore `Panel.Opacity`.
 
+### Fuse.Controls.DatePicker/Fuse.Controls.TimePicker
+- Fixed an Uno reflection bug that caused these pickers to crash in preview.
+
 ### Scripting
-- `Fuse.Scripting`'s `Function` type has a `Call` method, this now takes a `Scripting.Context`. This guarentees that it can only occur on the VM thread.
-- `Fuse.Scripting`'s `Object` type has a `CallMethod` method, this now takes a `Scripting.Context`. This guarentees that it can only occur on the VM thread.
+- `Fuse.Scripting`'s `Function` type has a `Call` method, this now takes a `Scripting.Context`. This guarantees that it can only occur on the VM thread.
+- `Fuse.Scripting`'s `Object` type has a `CallMethod` method, this now takes a `Scripting.Context`. This guarantees that it can only occur on the VM thread.
 - IMirror is no longer implemented by ThreadWorker. This functionality has been moved to the context
 - Moved `ArrayMirror`, `ClassInstance`, `ModuleInstance`, `ObjectMirror`, `Observable`, `ObservableProperty`, `RootableScriptModule` & `ThreadWorker` to the `Fuse.Scripting.JavaScript` namespace
 - Removed the `CanEvaluate` method and instead rely on the passing of the `Scripting.Context` to know if we are on the VM thread or not.
@@ -126,9 +197,9 @@
 - `Fuse.Scripting.JavaScript`'s `ThreadWorker` no longer blocks on construction
 - Implemented `console.error`, `console.warn` and `console.info`
 - Improved formatting for the above functions, as well as for `console.log`
-- The `ScriptMethod<T>` contstructor now throws if it's passed `ExecutionThread.MainThread` with Func, instead of failing to run it later on.
+- The `ScriptMethod<T>` constructor now throws if it's passed `ExecutionThread.MainThread` with Func, instead of failing to run it later on.
 - The `ScriptMethodInline` constructor that takes an `ExecutionThread` as an argument is now obsolete. Use the one without instead. JavaScript needs to run on the JavaScript thread anyway.
-- The `ScriptMethod<T>` contstructor that takes `Func` and `ExecutionThread` as arguments is now obsolete. Use the one without instead.
+- The `ScriptMethod<T>` constructor that takes `Func` and `ExecutionThread` as arguments is now obsolete. Use the one without instead.
 - Calling script-methods that doesn't take any arguments should now consistently give an error. This was already the case for many functions. This is intended to ensure user-code is forward-compatible.
 - `ScriptException.ErrorMessage` has been marked as obsolete, use `ScriptException.Message` instead.
 - `ScriptException.Message` no longer includes all details about the script-exception, only the message itself. If you want the extra information, use `ScriptException.ToString()`, or check the specific fields.
@@ -405,7 +476,7 @@ which will stop push notifications registering (and potentially asking for permi
 - Optimized redundant OpenGL rendertarget operations. Gives speedups on some platforms.
 - Optimized invalidation strategy for transforms, to avoid subtree traversion. This improves performance generally when animating large subtrees (e.g. scrollviews).
 - Backwards incompatible optimization change: The `protected virtual void Visual.OnInvalidateWorldTransform()` method was removed. The contract of this method was very expensive to implement as it had to be called on all nodes, just in case it was overridden somewhere. If you have custom Uno code relying on this method (unlikely), then please rewrite to explicitly subscribe to the `Visual.WorldTransformInvalidated` event instead, like so: Override `OnRooted` and do `WorldTransformInvalidated += OnInvalidateWorldTransform;`, Override `OnUnrooted` and to `WorldTransformInvalidated -= OnInvalidateWorldTransform;`, then rewrite `protected override void OnInvalidateWorldTransform()` to `void OnInvalidateWorldTransform(object sender, EventArgs args)`
-- To improve rendering speed, Fuse no longer checks for OpenGL errors in release builds in some performance-critical code paths  
+- To improve rendering speed, Fuse no longer checks for OpenGL errors in release builds in some performance-critical code paths
 - Improved perceived ScrollView performance by preventing caching while pointers are pressed on them, avoiding inconsistent framerates.
 - Fixed a bug which prevented elements like `Image` to use fast-track rendering in trivial cases with opacity (avoids render to texture).
 - Optimized how bounding boxes are calculated (improves layout and rendering performance).
@@ -418,9 +489,9 @@ which will stop push notifications registering (and potentially asking for permi
 - Added the `attract` feature, which was previously only in premiumlibs. This provides a much simpler syntax for animation than the `Attractor` behavior.
 
 ### Gesture
-- The experimental `IGesture` interface has changed. 
+- The experimental `IGesture` interface has changed.
   * The `Significance`, `Priority` and `PriotityAdjustment` have been merged into the single `GetPriority` function.
-  * `OnCapture` is changed to `OnCaptureChanged` and provides the previous capture state 
+  * `OnCapture` is changed to `OnCaptureChanged` and provides the previous capture state
 - `Clicked`, `DoubleClicked`, `Tapped`, `DoubleTapped`, and `LongPressed` have been corrected to only detect the primary "first" pointer press. If you'd like to accept any pointer index add `PointerIndex="Any"` to the gesture.
     <Clicked PointerIndex="Any"/>
 - `SwipeGesture`, `ScrollView`, `LinearRangeBehaviour` (`Slider`), `CircularRangeBehaviour`, `Clicked`, `Tapped`, `DoubleClicked`, `DoubleTapped`, `LongPressed`, `WhilePressed` all use the gesture system now. They have a `GesturePriority` property which can be used to adjust relative priorities -- though mostly the defaults should be fine.
@@ -466,7 +537,7 @@ which will stop push notifications registering (and potentially asking for permi
 - Fixed a crash in the rooting of certain tree structures using any of the Navigation triggers such as `WhileActive`
 
 ### Fuse.ImageTools
-- Fixed bug preventing handling of `KEEP_ASPECT` resize mode on Android when using ImageTools.resize 
+- Fixed bug preventing handling of `KEEP_ASPECT` resize mode on Android when using ImageTools.resize
 
 ### Fuse.Camera
 - iOS: Fixed crash when using Fuse.Camera alongside `<iOS.StatusBarConfig IsVisible="false" />`
@@ -501,7 +572,7 @@ which will stop push notifications registering (and potentially asking for permi
 - Fuse.Input.Gesture now only has an internal constructor. This means that external code can't instantiate it. But before, they already couldn't do so in a *meaningful* way, so this shouldn't really affect any applications.
 
 ### Native TextInput
-- Fixed issue where focusing a `<TextInput />` or `<TextView />` by tapping it would not update the caret position accordingly. 
+- Fixed issue where focusing a `<TextInput />` or `<TextView />` by tapping it would not update the caret position accordingly.
 
 ### Route Navigation Triggers
 - `Activated`, `Deactivated`, `WhileActive`, `WhileInactve` have all been fixed when used inside nested navigation. Previously they would only consider the local navigation, not the entire tree. If the old behavior is still desired you can set the `Path="Local"` option on the navigation.
@@ -619,7 +690,7 @@ This release only upgraded Uno.
 - A new static Uno class has been introduced, called `Fuse.Version`. It contains fields for the major, minor and patch-version, as well as a string with the full version number.
 
 ### Native
-- Add implementation for `android.view.TextureView` to better support multiple `<GraphicsView />`'s and `<NativeViewHost />`'s on Android. 
+- Add implementation for `android.view.TextureView` to better support multiple `<GraphicsView />`'s and `<NativeViewHost />`'s on Android.
 
 ### Container
 - In order to fix a memory leak in `Container` the pre-rooting structure was changed. Children of the container will not be children of the `Subtree` until rooted. It is not believed this will have any noticable effect; other features, like Trigger, also work this way.

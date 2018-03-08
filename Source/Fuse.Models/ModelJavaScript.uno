@@ -23,21 +23,32 @@ namespace Fuse.Models
 		[UXAttachedPropertySetter("JavaScript.Model"), UXAuxNameTable("ModelNameTable")]
 		public static void SetModel(Visual v, string modulePath)
 		{
-			var md = v.Properties.Get( _modelHandle ) as ModelData;
-			if (md == null)
-			{
-				md = new ModelData { ModulePath = modulePath };
-				v.Properties.Set( _modelHandle, md );
-			}
-			else
-			{
-				md.ModulePath = modulePath;
-			}
-			
-			Complete( md, v );
+			var md = GetOrCreateModelData(v);
+			md.ModulePath = modulePath;
+			OnModelDataChanged(md, v);
+		}
+
+		[UXAttachedPropertyGetter("JavaScript.Model")]
+		public static string GetModel(Visual v)
+		{
+			return GetOrCreateModelData(v).ModulePath;
 		}
 		
-		static void Complete( ModelData md, Visual v )
+		[UXAttachedPropertySetter("ModelNameTable")]
+		public static void SetModelNameTable(Visual v, NameTable nt)
+		{
+			var md = GetOrCreateModelData(v);
+			md.NameTable = nt;
+			OnModelDataChanged(md, v);
+		}
+
+		[UXAttachedPropertyGetter("ModelNameTable")]
+		public static NameTable GetModelNameTable(Visual v)
+		{
+			return GetOrCreateModelData(v).NameTable;
+		}
+
+		static void OnModelDataChanged(ModelData md, Visual v)
 		{
 			v.RemoveAllChildren<ModelJavaScript>();
 			
@@ -45,24 +56,18 @@ namespace Fuse.Models
 			if (md.NameTable == null || md.ModulePath == null)
 				return;
 			
-			v.Children.Add( new ModelJavaScript(md.NameTable, md.ModulePath, null) );
+			v.Children.Add(new ModelJavaScript(md));
 		}
-		
-		[UXAttachedPropertySetter("ModelNameTable")]
-		public static void SetModelNameTable(Visual v, NameTable nt)
+
+		static ModelData GetOrCreateModelData(Visual v)
 		{
-			var md = v.Properties.Get( _modelHandle ) as ModelData;
+			var md = v.Properties.Get(_modelHandle) as ModelData;
 			if (md == null)
 			{
-				md = new ModelData{ NameTable = nt };
-				v.Properties.Set( _modelHandle, md );
+				md = new ModelData();
+				v.Properties.Set(_modelHandle, md);
 			}
-			else
-			{
-				md.NameTable = nt;
-			}
-			
-			Complete( md, v );
+			return md;
 		}
 
 		//TODO: This should probably be JavaScript.Model, Preview would need to be adjusted as well
@@ -121,16 +126,21 @@ namespace Fuse.Models
 			}
 			
 			//app-level model does not have a nametable otherwise migration would not be possible
-			var js = new ModelJavaScript(null, modulePath, previewStateId);
-			return js;
+			var md = new ModelData
+			{
+				ModulePath = modulePath
+			};
+			
+			return new ModelJavaScript(md, previewStateId);
 		}
 		
 		string _modulePath;
-		internal ModelJavaScript(NameTable nt, string modulePath, string previewStateId)
-			: base(nt)
+
+		private ModelJavaScript(ModelData md, string previewStateId = null)
+			: base(md.NameTable)
 		{
 			_previewStateModelId = previewStateId;
-			_modulePath = modulePath;
+			_modulePath = md.ModulePath;
 			FileName = "(model-script)";
 			SetupModel();
 		}

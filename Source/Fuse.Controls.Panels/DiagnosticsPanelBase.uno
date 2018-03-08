@@ -9,7 +9,7 @@ namespace Fuse.Controls
 {
 	public class DiagnosticsPanelBase : Panel, Node.ISubtreeDataProvider, IObject
 	{
-		object ISubtreeDataProvider.GetData(Node child) { return this; }
+		ContextDataResult ISubtreeDataProvider.TryGetDataProvider(Node child, DataType type, out object provider) { provider = this; return ContextDataResult.Stop; }
 
 		bool IObject.ContainsKey(string key) { return _properties.ContainsKey(key); }
 

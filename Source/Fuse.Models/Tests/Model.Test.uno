@@ -12,6 +12,37 @@ namespace Fuse.Models.Test
 	public class ModelTest : ModelTestBase
 	{
 		[Test]
+		public void NestedArray()
+		{
+			var e = new UX.Model.NestedArray();
+			using(var root = TestRootPanel.CreateWithChild(e))
+			{
+				root.StepFrameJS();
+				Assert.AreEqual("", GetRecursiveText(e));
+				e.push.Perform(); // Throws if test fails
+				root.StepFrameJS();
+				Assert.AreEqual("0,1,2", GetRecursiveText(e));
+			}
+		}
+
+		[Test]
+		public void ArrayParentMeta()
+		{
+			var e = new UX.Model.ArrayParentMeta();
+			using (var root = TestRootPanel.CreateWithChild(e))
+			{
+				root.StepFrameJS();
+				Assert.AreEqual("foo,bar,baz", GetRecursiveText(e));
+				e.step1.Perform();
+				root.StepFrameJS();
+				Assert.AreEqual("foo,baz", GetRecursiveText(e));
+				e.step2.Perform();
+				root.StepFrameJS(); // Throws if test fails
+				Assert.AreEqual("baz,baz", GetRecursiveText(e));
+			}
+		}
+
+		[Test]
 		public void ReplaceAt() 
 		{
 			var e = new UX.Model.ReplaceAt();
@@ -595,6 +626,39 @@ namespace Fuse.Models.Test
 				Assert.AreEqual(1, diagnostics.Count);
 				var se = (Fuse.Scripting.ScriptException) diagnostics[0].Exception;
 				Assert.Contains("THROWN_FROM_GETTER", se.Message);
+			}
+		}
+
+		[Test]
+		public void ParentLoop()
+		{
+			var e = new UX.Model.ParentLoop();
+			using (var root = TestRootPanel.CreateWithChild(e))
+			{
+				e.detachCycle.Perform();
+				root.StepFrameJS();
+
+				e.attachCycle.Perform();
+				root.StepFrameJS();
+				
+				e.changeCycleData.Perform();
+				root.StepFrameJS();
+
+				// There are no assertions, since failure is triggered by a stack overflow in the JavaScript VM
+			}
+		}
+
+		[Test]
+		public void DisconnectOnUpdate()
+		{
+			var e = new UX.Model.DisconnectOnUpdate();
+			using (var root = TestRootPanel.CreateWithChild(e))
+			{
+				e.step1.Perform();
+				root.StepFrameJS();
+
+				e.step2.Perform();
+				root.StepFrameJS();
 			}
 		}
 

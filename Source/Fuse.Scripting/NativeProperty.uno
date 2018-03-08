@@ -7,7 +7,7 @@ namespace Fuse.Scripting
 
 	public class NativeProperty<T, TJSValue> : NativeMember
 	{
-		Action<Context, TJSValue> _setHandler;
+		Action<TJSValue> _setHandler;
 		Func<T> _getHandler;
 		ValueConverter<T, TJSValue> _valueConverter;
 		TJSValue _readonlyValue = default(TJSValue);
@@ -22,7 +22,7 @@ namespace Fuse.Scripting
 			_readonlyValue = value;
 		}
 		
-		public NativeProperty(string name, Func<T> getHandler = null, Action<Context, TJSValue> setHandler = null, ValueConverter<T, TJSValue> valueConverter = null) : base(name)
+		public NativeProperty(string name, Func<T> getHandler = null, Action<TJSValue> setHandler = null, ValueConverter<T, TJSValue> valueConverter = null) : base(name)
 		{
 			_setHandler = setHandler;
 			_getHandler = getHandler;
@@ -30,12 +30,12 @@ namespace Fuse.Scripting
 			_valueConverter = valueConverter;
 		}
 
-		protected override object CreateObject()
+		protected override object CreateObject(Context context)
 		{
 			if(_isReadonly)
-				Context.ObjectDefineProperty(ModuleObject, Name, _readonlyValue);
+				context.ObjectDefineProperty(ModuleObject, Name, _readonlyValue);
 			else
-				Context.ObjectDefineProperty(ModuleObject, Name, (Callback)GetProperty, (Callback)SetProperty);
+				context.ObjectDefineProperty(ModuleObject, Name, (Callback)GetProperty, (Callback)SetProperty);
 
 			return null;
 		}
@@ -44,11 +44,11 @@ namespace Fuse.Scripting
 		{
 			if(_setHandler == null) _setHandler = SetProperty;
 
-			_setHandler(context, (args.Length > 0 && args[0] is TJSValue) ? (TJSValue)args[0] : default(TJSValue));
+			_setHandler((args.Length > 0 && args[0] is TJSValue) ? (TJSValue)args[0] : default(TJSValue));
 
 			return null;
 		}
-		protected virtual void SetProperty(Context context, TJSValue value) {}
+		protected virtual void SetProperty(TJSValue value) {}
 		
 		object GetProperty(Context context, object[] args)
 		{
@@ -56,7 +56,7 @@ namespace Fuse.Scripting
 				_getHandler = GetProperty;
 
 			if(_valueConverter != null)
-				return _valueConverter(Context, _getHandler());
+				return _valueConverter(context, _getHandler());
 			
 			return _getHandler();
 		}

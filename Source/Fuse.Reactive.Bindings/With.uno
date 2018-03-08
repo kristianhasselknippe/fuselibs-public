@@ -68,7 +68,11 @@ namespace Fuse.Reactive
 		}
 
 		object _subtreeData;
-		object ISubtreeDataProvider.GetData(Node n) { return _subtreeData; }
+		ContextDataResult ISubtreeDataProvider.TryGetDataProvider( Node child, DataType type, out object provider )
+		{
+			provider = _subtreeData;
+			return type == DataType.Prime ? ContextDataResult.NullProvider : ContextDataResult.Continue;
+		}
 
 		void ValueForwarder.IValueListener.NewValue(object value)
 		{
@@ -91,7 +95,7 @@ namespace Fuse.Reactive
 
 
 	/**
-		Deprecated.
+		Deprecated (< 2017-01-01)
 		@see With
 	*/
 	public class Select : With

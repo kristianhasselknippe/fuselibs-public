@@ -2,20 +2,10 @@
   "Copyright": "Copyright (c) Fusetools AS 2017",
   "Description": "Fuse.Drawing",
   "Publisher": "Fusetools AS",
-  "Version": "1.6.0-rc1",
+  "Version": "1.7.0-rc1",
   "Package": {
     "ProjectUrl": "https://fusetools.com"
   },
-  "InternalsVisibleTo": [
-    "Fuse.Android.TextRenderer",
-    "Fuse.Controls",
-    "Fuse.Controls.Native",
-    "Fuse.Controls.Panels",
-    "Fuse.Controls.Primitives",
-    "Fuse.Drawing.Surface",
-    "Fuse.Elements",
-    "Fuse.iOS.TextRenderer"
-  ],
   "Packages": [
     "Uno.Collections"
   ],
