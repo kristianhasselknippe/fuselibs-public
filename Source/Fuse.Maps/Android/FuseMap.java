@@ -332,7 +332,8 @@ public class FuseMap extends FrameLayout {
 
 	private void onCameraChanged(CameraPosition pos)
 	{
-		_callback.onCameraChange(pos.target.latitude, pos.target.longitude, pos.zoom, pos.tilt, pos.bearing);
+		if(_callback!=null)
+			_callback.onCameraChange(pos.target.latitude, pos.target.longitude, pos.zoom, pos.tilt, pos.bearing);
 	}
 
 	/* Visuals */
