@@ -272,7 +272,12 @@ namespace Fuse.Controls.Native
 		@{
 			int wSpec = hasX ? android.view.View.MeasureSpec.makeMeasureSpec(w, android.view.View.MeasureSpec.EXACTLY) : 0;
 			int hSpec = hasY ? android.view.View.MeasureSpec.makeMeasureSpec(h, android.view.View.MeasureSpec.EXACTLY) : 0;
+
 			android.view.View view = (android.view.View)handle;
+			if (view.getLayoutParams() == null) {
+				view.setLayoutParams(new android.widget.FrameLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT));
+			}
+			
 			view.measure(wSpec, hSpec);
 		@}
 
